@@ -257,10 +257,10 @@ function parseRows(rows){
     const g=get(r,cGroup), card=get(r,cCard);
     if(g && !card){ group=g; continue; }
     if(!card) continue;
-    const have=get(r,cHave);
+    const have=get(r,cHave).toLowerCase();
     let qty=0;
     if(/^\d+$/.test(have)) qty=parseInt(have,10);
-    else if(have) qty=1;
+    else if(have && !["false","no","n","-","–","0"].includes(have)) qty=1;
     items.push({group, card, num:get(r,cNum), variant:get(r,cVar),
       src:get(r,cSrc), price:get(r,cPrice), status:get(r,cStatus), qty});
   }
