@@ -172,7 +172,7 @@
 // ---- config ----------------------------------------------------------
 // Option A (Google Sheets): paste your "Publish to web" CSV link between
 // the quotes below and the page will read the sheet live.
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1CH-OIzt39Zpz4ukytRp5MPkNE4vo7L5cNRZPcOdkLrg/edit?usp=sharing";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhhxFigR_Cyyp3Vi-Ne6yUBj2OrgG6VjbMNrBEzCm7dppuZkRgNj-9aeF7LbHYK3F3C4cIDm35GpE/pub?gid=1801512098&single=true&output=csv";
 // Option B (repo file): leave SHEET_URL empty and keep this xlsx next to
 // index.html — the page loads it instead.
 const FILE = "checklist.xlsx";
@@ -189,7 +189,9 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     if(SHEET_URL){
       const res = await fetch(SHEET_URL, {cache:"no-store"});
       if(!res.ok) throw new Error(res.status);
-      parseRows(csvToRows(await res.text()));
+      const text = await res.text();
+      if(/^\s*</.test(text)) throw new Error("Got a web page, not CSV — use the Publish-to-web CSV link or /export?format=csv");
+      parseRows(csvToRows(text));
     }else{
       const res = await fetch(FILE + "?t=" + Date.now(), {cache:"no-store"});
       if(!res.ok) throw new Error(res.status);
@@ -197,7 +199,10 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       parseWorkbook(XLSX.read(new Uint8Array(buf), {type:'array'}));
     }
   }catch(e){
-    document.getElementById('notice').style.display='block';
+    const n=document.getElementById('notice');
+    n.style.display='block';
+    n.querySelector('.inner').insertAdjacentHTML('afterbegin',
+      '<div style="margin-bottom:8px;color:#ffd47e">'+esc(String(e.message||e))+'</div>');
   }
 });
 
@@ -239,18 +244,25 @@ function parseWorkbook(wb){
 }
 
 function parseRows(rows){
+  // find columns by header name so you can remove/reorder columns freely
+  const hdr=(rows[0]||[]).map(h=>String(h).toLowerCase());
+  const col=name=>hdr.findIndex(h=>h.includes(name));
+  const cGroup=Math.max(col("group"),0), cCard=col("card")>-1?col("card"):1,
+        cNum=col("number"), cVar=col("variant"), cSrc=col("source"),
+        cPrice=col("price"), cStatus=col("status"), cHave=col("have");
+  const get=(r,c)=>c>-1?String(r[c]||"").trim():"";
   items=[]; let group="Ungrouped";
   for(let i=1;i<rows.length;i++){
     const r=rows[i];
-    const g=String(r[0]||"").trim(), card=String(r[1]||"").trim();
+    const g=get(r,cGroup), card=get(r,cCard);
     if(g && !card){ group=g; continue; }
     if(!card) continue;
-    const have=String(r[HAVE_COL]||"").trim();
+    const have=get(r,cHave);
     let qty=0;
     if(/^\d+$/.test(have)) qty=parseInt(have,10);
     else if(have) qty=1;
-    items.push({group, card, num:String(r[2]||"").trim(), variant:String(r[3]||"").trim(),
-      src:String(r[4]||"").trim(), price:String(r[5]||"").trim(), status:String(r[6]||"").trim(), qty});
+    items.push({group, card, num:get(r,cNum), variant:get(r,cVar),
+      src:get(r,cSrc), price:get(r,cPrice), status:get(r,cStatus), qty});
   }
   buildGroupSel(); render();
   document.getElementById('stats').style.display='grid';
@@ -339,10 +351,12 @@ function stats(){
   document.getElementById('sOwn').textContent=own;
   document.getElementById('sMiss').textContent=total-own;
   document.getElementById('sQty').textContent=items.reduce((a,b)=>a+b.qty,0);
-  let vOwn=0,vMiss=0;
-  items.forEach(i=>{const p=priceMid(i.price); if(p==null)return; if(i.qty>0)vOwn+=p*i.qty; else vMiss+=p;});
+  let vOwn=0,vMiss=0,anyPrice=false;
+  items.forEach(i=>{const p=priceMid(i.price); if(p==null)return; anyPrice=true; if(i.qty>0)vOwn+=p*i.qty; else vMiss+=p;});
   document.getElementById('sValOwn').textContent='$'+vOwn.toFixed(0);
   document.getElementById('sValMiss').textContent='$'+vMiss.toFixed(0);
+  document.getElementById('sValOwn').parentElement.style.display=anyPrice?'':'none';
+  document.getElementById('sValMiss').parentElement.style.display=anyPrice?'':'none';
 }
 
 document.getElementById('q').addEventListener('input',render);
