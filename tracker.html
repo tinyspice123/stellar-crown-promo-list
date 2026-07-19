@@ -97,6 +97,21 @@
     var(--crystal) border-box}
   .imgwrap{aspect-ratio:63/88;background:var(--panel2);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .imgwrap img{width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in}
+  .imgwrap.rh::after, .lightbox figure.rh::after{
+    content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:
+      repeating-linear-gradient(115deg,
+        rgba(255,120,120,.16) 0 14px, rgba(255,214,110,.14) 14px 28px,
+        rgba(120,255,190,.15) 28px 42px, rgba(120,180,255,.16) 42px 56px,
+        rgba(226,155,255,.15) 56px 70px),
+      linear-gradient(160deg, rgba(255,255,255,.10), transparent 45%);
+    mix-blend-mode:screen;
+  }
+  .imgwrap.rh .rhbadge{
+    position:absolute;left:6px;bottom:6px;z-index:2;font-size:9px;font-weight:700;
+    letter-spacing:.08em;padding:2px 6px;border-radius:6px;color:#100e22;
+    background:var(--crystal);opacity:.92}
+  .lightbox figure{position:relative}
   .lightbox{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
     background:rgba(10,8,24,.88);backdrop-filter:blur(4px);padding:24px;cursor:zoom-out}
   .lightbox.open{display:flex}
@@ -421,12 +436,13 @@ function cardEl(it){
   const url=imgUrl(it);
   const initial=esc(it.card.replace(/[^A-Za-z]/g,'').slice(0,2)||'?');
   d.innerHTML=`
-    <div class="imgwrap">
+    <div class="imgwrap${/reverse\s*holo/i.test(it.variant)?' rh':''}">
       ${url?`<img loading="lazy" alt="${esc(it.card)}" src="${url}"
         onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',innerHTML:'<b>${initial}</b><span>no image</span>'}))">`
         :`<div class="ph"><b>${initial}</b><span>variant</span></div>`}
       ${it.price?`<span class="pricechip">${esc(it.price)}</span>`:''}
       <span class="havechip ${it.qty>0?'y':'n'}">${it.qty>0?'OWNED':'NEED'}</span>
+      ${/reverse\s*holo/i.test(it.variant)?`<span class="rhbadge">REV HOLO</span>`:''}
       ${/verify/i.test(it.status)?`<span class="verify">verify</span>`:''}
     </div>
     <div class="meta">
@@ -444,6 +460,7 @@ function cardEl(it){
 
 const lb=document.getElementById('lightbox'), lbImg=document.getElementById('lbImg');
 function openLightbox(it,shownSrc){
+  lb.querySelector('figure').classList.toggle('rh', /reverse\s*holo/i.test(it.variant));
   document.getElementById('lbName').textContent=it.card;
   document.getElementById('lbNum').textContent=it.num;
   document.getElementById('lbVar').textContent=it.variant;
