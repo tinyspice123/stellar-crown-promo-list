@@ -27,6 +27,11 @@
 
   header{padding:26px 20px 8px; max-width:1180px; margin:0 auto}
   .eyebrow{font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--dim)}
+  .setlogo{display:block;max-width:min(360px,82vw);margin:2px auto 6px;
+    filter:drop-shadow(0 6px 22px rgba(141,180,255,.38)) drop-shadow(0 0 40px rgba(226,155,255,.18))}
+  .subtitle{text-align:center;font-size:14px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--dim);margin-bottom:2px}
+  .subtitle .tera{color:var(--tera2)}
   h1{font-family:"Unbounded","Sora",sans-serif; font-weight:700; font-size:clamp(22px,4.5vw,34px); line-height:1.15; margin-top:6px}
   h1 .tera{background:var(--crystal); -webkit-background-clip:text; background-clip:text; color:transparent}
 
@@ -131,7 +136,10 @@
 
 <header>
   <div class="eyebrow">Pokémon TCG · SV07 · English master set</div>
-  <h1>Stellar Crown <span class="tera">Promos</span></h1>
+  <img class="setlogo" src="https://images.pokemontcg.io/sv7/logo.png" alt="Stellar Crown"
+       onerror="this.style.display='none';document.getElementById('titleFallback').style.display='block'">
+  <h1 id="titleFallback" style="display:none">Stellar Crown <span class="tera">Promos</span></h1>
+  <div class="subtitle">Promos <span class="tera">&amp;</span> Variants</div>
 </header>
 
 <div class="notice" id="notice">
@@ -168,6 +176,12 @@
 <div class="controls" id="controls">
   <input type="search" id="q" placeholder="Search card, number, stamp…">
   <select id="groupSel"><option value="">All groups</option></select>
+  <select id="sortSel" title="Sort cards">
+    <option value="">Sheet order</option>
+    <option value="name">Name A–Z</option>
+    <option value="price-desc">Price high → low</option>
+    <option value="price-asc">Price low → high</option>
+  </select>
   <label class="toggle"><input type="checkbox" id="missOnly"> Missing only</label>
 </div>
 
@@ -352,6 +366,25 @@ function buildGroupSel(){
   });
 }
 
+function sortItems(list){
+  const mode=document.getElementById('sortSel').value;
+  if(!mode) return list; // sheet order
+  const arr=[...list];
+  if(mode==='name'){
+    arr.sort((a,b)=> a.card.localeCompare(b.card) || a.num.localeCompare(b.num,undefined,{numeric:true}));
+  }else{
+    const dir = mode==='price-desc' ? -1 : 1;
+    arr.sort((a,b)=>{
+      const pa=priceMid(a.price), pb=priceMid(b.price);
+      if(pa==null && pb==null) return 0;
+      if(pa==null) return 1;           // unpriced cards sink to the bottom
+      if(pb==null) return -1;
+      return (pa-pb)*dir;
+    });
+  }
+  return arr;
+}
+
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const gsel=document.getElementById('groupSel').value;
@@ -367,7 +400,7 @@ function render(){
   document.getElementById('empty').style.display = shown.length? 'none':'block';
 
   [...new Set(shown.map(i=>i.group))].forEach(g=>{
-    const list=shown.filter(i=>i.group===g);
+    const list=sortItems(shown.filter(i=>i.group===g));
     const own=list.filter(i=>i.qty>0).length;
     const gh=document.createElement('div'); gh.className='grouphead';
     gh.innerHTML=`<h2>${esc(g)}</h2><span class="count">${own}/${list.length} owned</span>`;
@@ -445,6 +478,7 @@ function stats(){
 document.getElementById('q').addEventListener('input',render);
 document.getElementById('groupSel').addEventListener('change',render);
 document.getElementById('missOnly').addEventListener('change',render);
+document.getElementById('sortSel').addEventListener('change',render);
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 </script>
