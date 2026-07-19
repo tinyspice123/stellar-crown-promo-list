@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Collection Tracker</title>
+<title>Stellar Crown — Collection Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="sets.js"></script>
 <style>
@@ -145,6 +145,16 @@
   .qtytag{border-top:1px solid var(--line);padding:7px 0;text-align:center;
     font-family:"Unbounded",sans-serif;font-size:12px}
   .qtytag.zero{color:var(--faint)}
+  .qtyctl{border-top:1px solid var(--line);padding:5px 0;display:flex;align-items:center;justify-content:center;gap:8px}
+  .qtyctl button{width:24px;height:24px;border-radius:8px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);font-size:14px;line-height:1;cursor:pointer}
+  .qtyctl button:hover{border-color:var(--tera2)}
+  .qtyctl span{min-width:34px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px}
+  .qtyctl span.zero{color:var(--faint)}
+  #saveToast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;
+    background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-size:12px;
+    border-radius:999px;padding:8px 16px;opacity:0;transition:opacity .25s;pointer-events:none}
+  #saveToast.show{opacity:1}
   .empty{display:none;text-align:center;color:var(--dim);padding:60px 0;font-size:14px}
   footer{max-width:1180px;margin:50px auto 0;padding:0 20px;font-size:11px;color:var(--faint);line-height:1.6}
   :focus-visible{outline:2px solid var(--tera2);outline-offset:2px}
@@ -237,7 +247,7 @@ const HAVE_COL = 7; // column H (fallback file only)
 // header branding from config
 document.title = cfg.name + " — Pokemon Card Tracker";
 {
-  const logoCands=[];
+  const logoCands=["assets/logos/"+SET_ID+".png"];
   if(cfg.logo) logoCands.push(cfg.logo);
   if(cfg.tcgSet) logoCands.push("https://images.pokemontcg.io/"+cfg.tcgSet+"/logo.png");
   const s=(cfg.tcgdexSet||"").match(/^[a-z]+/i);
@@ -262,6 +272,14 @@ document.getElementById('fnameFoot').textContent = SHEET_URL ? "your Google Shee
 
 window.addEventListener('DOMContentLoaded', async ()=>{
   await loadImgManifest();
+  if(!SHEET_URL && !FILE){
+    const n=document.getElementById('notice');
+    n.style.display='block';
+    n.querySelector('.inner').insertAdjacentHTML('afterbegin',
+      '<div style="margin-bottom:8px;color:#ffd47e">No sheet configured for this set yet — '+
+      'add its published CSV link to <b>sets.js</b> (see the commented sheet line).</div>');
+    return;
+  }
   try{
     if(SHEET_URL){
       const res = await fetch(SHEET_URL, {cache:"no-store"});
@@ -427,6 +445,31 @@ function sortItems(list){
   return arr;
 }
 
+const WRITE_OK = (typeof WRITE_URL!=="undefined") && WRITE_URL;
+let toastTimer=null;
+function toast(msg){
+  let el=document.getElementById('saveToast');
+  if(!el){ el=document.createElement('div'); el.id='saveToast'; document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),1600);
+}
+function changeQty(it,delta,cardDiv){
+  it.qty=Math.max(0,(it.qty|0)+delta);
+  // update this card in place
+  const span=cardDiv.querySelector('[data-qty] span');
+  span.textContent='\u00d7'+it.qty;
+  span.classList.toggle('zero', !it.qty);
+  const chip=cardDiv.querySelector('.havechip');
+  if(chip){ chip.textContent=it.qty>0?'OWNED':'NEED'; chip.classList.toggle('y',it.qty>0); chip.classList.toggle('n',!(it.qty>0)); }
+  stats();
+  // fire-and-forget write to the sheet (opaque response by design)
+  fetch(WRITE_URL,{method:'POST',mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({tab:cfg.tab||cfg.name, card:it.card, num:it.num, variant:it.variant, qty:it.qty})
+  }).then(()=>toast('Saved to sheet'))
+    .catch(()=>toast('Save failed \u2014 check connection'));
+}
+
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const gsel=document.getElementById('groupSel').value;
@@ -488,9 +531,19 @@ function cardEl(it){
       <div class="var">${esc(it.variant)}</div>
       <div class="src">${esc(it.src)}</div>
     </div>
-    <div class="qtytag ${it.qty? '':'zero'}">×${it.qty}</div>`;
+    ${WRITE_OK
+      ? `<div class="qtyctl" data-qty>
+           <button type="button" data-dec aria-label="one fewer">−</button>
+           <span class="${it.qty? '':'zero'}">×${it.qty}</span>
+           <button type="button" data-inc aria-label="one more">+</button>
+         </div>`
+      : `<div class="qtytag ${it.qty? '':'zero'}">×${it.qty}</div>`}`;
   const img=d.querySelector('.imgwrap img');
   if(img) img.addEventListener('click',()=>openLightbox(it,img.src));
+  if(WRITE_OK){
+    d.querySelector('[data-dec]').addEventListener('click',()=>changeQty(it,-1,d));
+    d.querySelector('[data-inc]').addEventListener('click',()=>changeQty(it,+1,d));
+  }
   return d;
 }
 

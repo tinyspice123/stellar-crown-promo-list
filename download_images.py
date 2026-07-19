@@ -124,7 +124,7 @@ for row in rows:
     numpart = num.split('/')[0].replace(' ', '').lower() or "x"
     filename = f"{card.lower().replace(' ', '_')}_{numpart}_{h}{ext}"
 
-    urls_to_dl[img_url] = (card, num, variant, filename)
+    urls_to_dl[key] = (card, num, variant, img_url, filename)
     downloaded.add(key)
 
 if dupes:
@@ -137,14 +137,17 @@ if dupes:
 print(f"\n[2/3] Downloading {len(urls_to_dl)} image(s)...")
 failed = []
 failed_keys = set()
-for i, (url, (card, num, variant, filename)) in enumerate(urls_to_dl.items(), 1):
+url_cache = {}  # url -> bytes, so a URL shared by several cards is fetched once
+for i, (key, (card, num, variant, url, filename)) in enumerate(urls_to_dl.items(), 1):
     filepath = img_dir / filename
     try:
         pct = f"[{i}/{len(urls_to_dl)}]"
         print(f"  {pct} {card} {num} ({variant})", end=" → ", flush=True)
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
-            filepath.write_bytes(response.read())
+        if url not in url_cache:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                url_cache[url] = response.read()
+        filepath.write_bytes(url_cache[url])
         size_kb = filepath.stat().st_size / 1024
         print(f"{filename} ({size_kb:.1f} KB) ✓")
     except Exception as e:
@@ -159,12 +162,12 @@ print(f"\n[3/3] Creating manifest...")
 mapfile = img_dir / "manifest.txt"
 with open(mapfile, 'w') as f:
     written = 0
-    for url, (card, num, variant, filename) in sorted(urls_to_dl.items()):
+    for key, (card, num, variant, url, filename) in sorted(urls_to_dl.items()):
         if filename in failed_keys:
             continue  # don't map cards to images that didn't download
         f.write(f"{card}|{num}|{variant}|{filename}\n")
         written += 1
-print(f"✓ Wrote {written} entries to img/manifest.txt")
+print(f"✓ Wrote {written} entries to {mapfile}")
 
 # Summary
 print(f"\n✅ Done!")

@@ -127,7 +127,7 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   const a=document.createElement('a');
   a.className='setcard';
   a.href='tracker.html?set='+encodeURIComponent(id);
-  const logoCands=[];
+  const logoCands=['assets/logos/'+id+'.png'];
   if(cfg.logo) logoCands.push(cfg.logo);
   if(cfg.tcgSet) logoCands.push('https://images.pokemontcg.io/'+cfg.tcgSet+'/logo.png');
   const sm=(cfg.tcgdexSet||'').match(/^[a-z]+/i);

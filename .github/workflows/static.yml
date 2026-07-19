@@ -1,29 +1,52 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# CI + Deploy pipeline: site checks and unit tests run first;
+# deployment to GitHub Pages only happens when they pass.
+name: CI / Deploy to Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
+  pull_request:            # PRs get the test jobs only (no deploy)
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
+  site-checks:
+    name: Site checks (sets.js + HTML)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Zero-dependency site checks
+        run: node tests/ci_checks.mjs
+
+  python-tests:
+    name: Python tests (scripts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Byte-compile scripts
+        run: python -m py_compile download_images.py download_assets.py
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
   deploy:
+    name: Deploy to GitHub Pages
+    # gate deployment on the tests; skip entirely for pull requests
+    needs: [site-checks, python-tests]
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
