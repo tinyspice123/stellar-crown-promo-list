@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6.3.0
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - name: Fetch all sheets
         run: python backup_sheets.py
       - name: Commit if changed
