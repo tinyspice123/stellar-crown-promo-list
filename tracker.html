@@ -236,10 +236,10 @@ const HAVE_COL = 7; // column H (fallback file only)
 
 // header branding from config
 document.title = cfg.name + " — Pokemon Card Tracker";
-document.getElementById('setLogo').src = cfg.logo || ("https://images.pokemontcg.io/"+cfg.tcgSet+"/logo.png");
+document.getElementById('setLogo').src = cfg.logo || (cfg.tcgSet ? "https://images.pokemontcg.io/"+cfg.tcgSet+"/logo.png" : "");
 document.getElementById('setLogo').alt = cfg.name;
 document.getElementById('eyebrowText').textContent =
-  cfg.eyebrow || ("Pokémon TCG · "+cfg.tcgSet.toUpperCase()+" · English master set");
+  cfg.eyebrow || ("Pokémon TCG · "+(cfg.tcgSet||cfg.code||"").toUpperCase()+" · English master set");
 document.getElementById('fallbackName').textContent = cfg.name;
 if(cfg.subtitle){
   const st=document.getElementById('subtitleText');
@@ -368,11 +368,16 @@ function imgUrl(it){
   // 2) downloaded copy in the repo's img/ folder (via img/manifest.txt)
   const localFile = imgMap.get(`${it.card}|${it.num}|${it.variant}`);
   if(localFile) return "img/"+SET_ID+"/"+localFile;
-  // 3) fall back to pokemontcg.io base card art
-  let m=it.num.match(/^SVP\s*(\d+)/i);
-  if(m) return "https://images.pokemontcg.io/"+(cfg.promoSet||"svp")+"/"+parseInt(m[1],10)+".png";
-  m=it.num.match(/^(\d+)\s*\//);   // any NNN/MMM number
-  if(m) return "https://images.pokemontcg.io/"+cfg.tcgSet+"/"+parseInt(m[1],10)+".png";
+  const m=it.num.match(/^(\d+)\s*\//);   // any NNN/MMM number
+  // 3) per-set image template ({num}=7, {num3}=007) for sets not on pokemontcg.io
+  if(m && cfg.imgTemplate){
+    const n=parseInt(m[1],10);
+    return cfg.imgTemplate.replace("{num3}", String(n).padStart(3,"0")).replace("{num}", String(n));
+  }
+  // 4) fall back to pokemontcg.io base card art
+  const p=it.num.match(/^SVP\s*(\d+)/i);
+  if(p) return "https://images.pokemontcg.io/"+(cfg.promoSet||"svp")+"/"+parseInt(p[1],10)+".png";
+  if(m && cfg.tcgSet) return "https://images.pokemontcg.io/"+cfg.tcgSet+"/"+parseInt(m[1],10)+".png";
   return null;
 }
 

@@ -117,11 +117,11 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   const a=document.createElement('a');
   a.className='setcard';
   a.href='tracker.html?set='+encodeURIComponent(id);
-  const logo=cfg.logo||('https://images.pokemontcg.io/'+cfg.tcgSet+'/logo.png');
+  const logo=cfg.logo||(cfg.tcgSet?'https://images.pokemontcg.io/'+cfg.tcgSet+'/logo.png':'');
   a.innerHTML=`
     <img src="${logo}" alt="${cfg.name}"
       onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg',textContent:'${cfg.name.replace(/'/g,"\\'")}'}))">
-    <div class="meta"><span class="code">${cfg.tcgSet}</span><span class="prog" data-prog>…</span></div>
+    <div class="meta"><span class="code">${cfg.tcgSet||cfg.code||""}</span><span class="prog" data-prog>…</span></div>
     <div class="bar"><i data-bar></i></div>`;
   main.appendChild(a);
   progress(cfg).then(p=>{
