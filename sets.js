@@ -34,6 +34,14 @@ const SETS = {
     tab: "stellar_crown",
   },
 
+    "perfect-order": {
+    name: "Perfect Order",
+    sheet: "  https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhhxFigR_Cyyp3Vi-Ne6yUBj2OrgG6VjbMNrBEzCm7dppuZkRgNj-9aeF7LbHYK3F3C4cIDm35GpE/pub?gid=1756238588&single=true&output=csv",
+    tcgSet: "me03",
+    file: "checklist.xlsx",
+    tab: "perfect_order",
+  },
+
   // ---- template: copy, un-comment, fill in ----------------------------
   // "paradox-rift": {
   //   name: "Paradox Rift",
