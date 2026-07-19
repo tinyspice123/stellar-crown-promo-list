@@ -1,6 +1,6 @@
-# Promo Vault — Pokémon TCG Set Trackers
+# Pokemon Card Tracker
 
-A multi-set, template-driven promo & variant checklist site. A home page lists your sets; each set gets its own tracker page fed live from a tab in one Google Spreadsheet. Adding a set means adding one sheet tab and one entry in `sets.js` — nothing else.
+A multi-set, template-driven card checklist site — each set page can mix the master base set and its promos/variants in one list. A home page lists your sets; each set gets its own tracker page fed live from a tab in one Google Spreadsheet. Adding a set means adding one sheet tab and one entry in `sets.js` — nothing else.
 
 **Live site:** https://tinyspice123.github.io/stellar-crown-promo-list/
 

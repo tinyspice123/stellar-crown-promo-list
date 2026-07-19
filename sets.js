@@ -19,6 +19,7 @@
 //   promoSet (optional) promo set code for "SVP NNN" numbers, default "svp"
 //   logo     (optional) custom logo URL, defaults to the tcgSet logo
 //   eyebrow  (optional) small line above the logo
+//   subtitle (optional) small line under the logo (hidden if omitted)
 //   file     (optional) local xlsx fallback if sheet is empty/unreachable
 //   tab      (optional) tab name inside that xlsx
 // =====================================================================
