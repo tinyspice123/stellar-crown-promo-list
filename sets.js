@@ -41,7 +41,7 @@ const SETS = {
     tcgSet: "sv3",
   },
 
-  "151": {                     // Sep 2023 · special set (no reverse holos; Poké Ball / Master Ball foils instead)
+  "pokemon-151": {                     // Sep 2023 · special set (no reverse holos; Poké Ball / Master Ball foils instead)
     name: "151",
 //    sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhhxFigR_Cyyp3Vi-Ne6yUBj2OrgG6VjbMNrBEzCm7dppuZkRgNj-9aeF7LbHYK3F3C4cIDm35GpE/pub?gid=PASTE_TAB_GID&single=true&output=csv",
     tcgSet: "sv3pt5",
