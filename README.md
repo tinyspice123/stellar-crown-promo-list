@@ -1,290 +1,162 @@
 # Pokemon Card Tracker
 
-A multi-set, template-driven card checklist site — each set page can mix the master base set and its promos/variants in one list. A home page lists your sets; each set gets its own tracker page fed live from a tab in one Google Spreadsheet. Adding a set means adding one sheet tab and one entry in `sets.js` — nothing else.
-
-**Live site:** https://tinyspice123.github.io/stellar-crown-promo-list/
+A multi-set, template-driven card checklist site. A home page lists your sets with live completion bars; each set gets its own tracker page fed from a tab in one Google Spreadsheet. Set pages can mix the master base set, reverse holos, secret rares, and promos/variants in one list. Adding a set means adding one sheet tab and one entry in `sets.js` — nothing else.
 
 ---
 
 ## Features
 
-- **Multi-set template** — One tracker page serves every set via `tracker.html?set=<id>`; the home page shows all sets with live completion bars
-- **Live Google Sheets sync** — Update your checklist in the sheet; changes appear on the site within ~5 minutes (no republish needed)
-- **Track what you own** — Checkbox or number each card you have; automatically counts owned vs. missing
-- **Price estimates** — See the total value of cards you own and cost to complete your collection (all prices in £)
-- **Smart filtering** — Search by card name, filter by category (Prerelease, ETB, etc.), or toggle "Missing Only" view
-- **High-resolution card viewer** — Click any card image to open a lightbox; automatically loads hi-res scans from pokemontcg.io
-- **Custom images** — Add an "Image" column to your sheet and paste direct URLs for variant photos (staff stamps, retailer exclusives, etc.)
-- **Works offline** — Falls back to local `.xlsx` file if the sheet is unreachable
-- **Image downloader tool** — One script mirrors every Image URL from the sheet into the repo's `img/` folder for faster, self-hosted loading
+- **Multi-set template** — One tracker page serves every set via `tracker.html?set=<id>`; the home page shows each set's official logo and a live progress bar
+- **Live Google Sheets sync** — Edit the sheet; the site updates within ~5 minutes (no republish needed)
+- **Quantity tracking** — The Have column takes numbers (`3` shows as ×3 and counts in total copies), plus `TRUE`/`x`/`yes` for simple ownership
+- **Reverse holo rendering** — Rows whose Variant contains "Reverse holo" get a rainbow foil sheen and REV HOLO badge automatically, in the grid and the lightbox, for every set
+- **Price stats in £** — Value owned and cost of gaps from the Price column; ranges like `~£4-11` are averaged
+- **Sorting** — Sheet order, name A–Z, or price high↔low (within each group; unpriced cards sink)
+- **Filtering** — Search, group dropdown, Missing Only toggle
+- **Lightbox viewer** — Click any card to zoom; hi-res scans load where available; Esc or click to close
+- **Two image APIs + fallback chain** — pokemontcg.io for older sets, TCGdex for newer ones (Mega era onward); each image tries its sources in order and heals itself if one is down
+- **Custom images** — Per-row Image URLs in the sheet always win; an image downloader mirrors them into the repo
+- **Offline fallback** — Optional local `.xlsx` per set if the sheet is unreachable
 
 ---
 
-## Getting Started
+## Getting Started (hosting your own)
 
-### Option A: Use the Live Site (Easiest)
-
-1. Go to https://tinyspice123.github.io/stellar-crown-promo-list/
-2. The tracker reads from the public Google Sheet and displays it immediately
-3. To add/edit cards, contact the sheet owner or fork this repo (see below)
-
-### Option B: Host Your Own Copy
-
-#### Prerequisites
-- A Google account (free)
-- GitHub account (free) to fork and deploy
-- Basic familiarity with Google Sheets and GitHub Pages
-
-#### Steps
-
-1. **Fork the repo**
-   ```
-   https://github.com/tinyspice123/stellar-crown-promo-list
-   ```
-
-2. **Create your own Google Sheet**
-   - Copy the structure: columns for `Group`, `Card`, `Number`, `Variant`, `Source`, `Status`, `Price`, `Have`, `Image`
-   - Add your cards and pricing
-   - Go to **File → Share → Publish to web** → select the sheet tab → publish
-   - Copy the published CSV URL (format: `https://docs.google.com/spreadsheets/.../pub?gid=...&output=csv`)
-
-3. **Update the config in `index.html`**
-   - Open `index.html` in a text editor
-   - Find this line (around line 175):
-     ```javascript
-     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/...";
-     ```
-   - Replace with your published sheet URL
-   - Adjust the exchange rate if needed:
-     ```javascript
-     const USD_TO_LOCAL = 0.75; // change this to your rate
-     const CURRENCY = "£"; // or "$" for USD
-     ```
-
-4. **Push to GitHub and enable Pages**
-   - Commit and push your changes
-   - Go to repo **Settings → Pages → Source: Deploy from branch → main**
-   - Your site goes live at `https://[yourname].github.io/stellar-crown-promo-list/`
-
-5. **Keep the sheet updated**
-   - Edit your Google Sheet anytime
-   - The site auto-syncs within ~5 minutes
+1. **Fork the repo** and enable GitHub Pages (Settings → Pages → deploy from `main`)
+2. **Create a Google Spreadsheet** with one tab per set, columns:
+   `Group, Card, Number, Variant, Source, Status, Price, Have, Image`
+3. **Publish each tab**: File → Share → Publish to web → select the tab → CSV → copy the link
+4. **Edit `sets.js`** — add an entry per set (see below). That's the only file you configure.
 
 ---
 
 ## Adding a New Set
 
-1. **Add a tab** to your Google Spreadsheet with the same columns as the existing one
-2. **Publish that tab**: File → Share → Publish to web → select the tab → CSV → copy the link (each tab has its own `gid=` in the URL)
+1. **Add a tab** to the spreadsheet with the same columns
+2. **Publish that tab** to web as CSV (each tab has its own `gid=` in the link — make sure you pick the right tab, not "entire document")
 3. **Add an entry to `sets.js`**:
+
    ```javascript
+   // A set covered by pokemontcg.io (anything up to ~2025):
    "paradox-rift": {
      name: "Paradox Rift",
-     sheet: "https://docs.google.com/.../pub?gid=YOUR_TAB_GID&single=true&output=csv",
-     tcgSet: "sv4",   // pokemontcg.io set code (used for card images + logo)
+     sheet: "https://docs.google.com/.../pub?gid=TAB_GID&single=true&output=csv",
+     tcgSet: "sv4",        // pokemontcg.io code → card images + set logo
+   },
+
+   // A newer set pokemontcg.io lacks (Mega Evolution era onward):
+   "perfect-order": {
+     name: "Perfect Order",
+     code: "ME03",          // shown on the home tile
+     sheet: "https://docs.google.com/.../pub?gid=TAB_GID&single=true&output=csv",
+     tcgdexSet: "me03",     // TCGdex id → card images + set logo
    },
    ```
-4. Commit & push. The set appears on the home page with its own progress bar, and its tracker lives at `tracker.html?set=paradox-rift`.
 
-Common `tcgSet` codes: `sv7` Stellar Crown · `sv4` Paradox Rift · `sv8` Surging Sparks · `sv3pt5` 151 · full list at pokemontcg.io/sets.
+4. Commit & push. The set appears on the home page with logo and progress bar; its tracker lives at `tracker.html?set=<id>`. The tracker itself never needs editing.
+
+Common `tcgSet` codes: `sv1` S&V base · `sv2` Paldea Evolved · `sv3` Obsidian Flames · `sv3pt5` 151 · `sv4` Paradox Rift · `sv4pt5` Paldean Fates · `sv5` Temporal Forces · `sv6` Twilight Masquerade · `sv6pt5` Shrouded Fable · `sv7` Stellar Crown · `sv8` Surging Sparks · `sv8pt5` Prismatic Evolutions. Verify any code by opening `https://images.pokemontcg.io/<code>/logo.png` in a browser. For TCGdex ids, check the set's page on tcgdex.net.
+
+Optional per-set fields: `logo` (custom logo URL, overrides both APIs), `imgTemplate` (fully custom image URL with `{num}`/`{num3}` placeholders), `promoSet` (pokemontcg.io code for `SVP NNN` rows, default `svp`), `subtitle`, `eyebrow`, `file` + `tab` (local xlsx fallback).
 
 ---
 
 ## Sheet Structure
 
-Create columns with these exact header names:
-
 | Column | Example | Notes |
 |--------|---------|-------|
-| **Group** | `Play! Pokémon Prize Pack Series 6` | Section headers (leave Card empty for group rows) |
+| **Group** | `Base Set (001–142)` | Section headers: fill Group, leave Card empty |
 | **Card** | `Crispin` | Pokémon or Trainer name |
-| **Number** | `133/142` or `SVP 133` | Set number or SVP code |
-| **Variant** | `Non-holo` | What makes it unique (Cosmos holo, STAFF stamp, etc.) |
-| **Source** | `Prize Pack Series 6 & 7` | Where to find it |
-| **Status** | `Verify` or empty | Optional flag for cards needing confirmation |
-| **Price** | `~$2-3` or `£1.50` | Estimate or range; `$` prices auto-convert |
-| **Have** | `1`, `yes`, `true`, `x`, or empty | How many you own (empty = need it) |
-| **Image** | `https://...` | Direct URL to a card photo (overrides auto-fetch) |
+| **Number** | `133/142` or `SVP 133` | Drives auto images; any `NNN/MMM` works |
+| **Variant** | `Regular` / `Reverse holo` / `STAFF stamp` | What makes this row unique. "Reverse holo" triggers the foil sheen |
+| **Source** | `Prize Pack Series 6 & 7` | Where it's from / rarity — free text |
+| **Status** | `Verify` or empty | Shows a verify badge |
+| **Price** | `£1.50` or `~£4-11` | Plain £ text; ranges averaged; blank = excluded from value stats |
+| **Have** | `1`, `2`, `TRUE`, `x`, or empty | Number = quantity owned; empty/`FALSE`/`0` = need it |
+| **Image** | `https://...` | Direct photo URL — always wins over API images |
 
-**Pricing tips:**
-- Write prices with `$` in USD; they convert to your `CURRENCY` at the `USD_TO_LOCAL` rate
-- Write prices with your local symbol (e.g., `£3.50`) to skip conversion
-- Ranges are averaged: `~$5-15` → midpoint ~$10 → ~£7.50
-- Leave blank to exclude from value calculations
+Duplicate card names are fine (both Meditite prints, regular + reverse rows): rows are identified by Card + Number + Variant together.
 
 ---
 
-## Using the Tracker
+## Image Sources (priority order)
 
-### Main View
-- **Cards grid** — Click an image to zoom in and see hi-res scans
-- **Stats ring** — Top-left: % complete, owned/missing count, total value
-- **Filters** — Search box, group dropdown, "Missing Only" toggle
+1. **Sheet Image column** — your own photo URLs
+2. **`img/<set-id>/` folder** — repo-hosted copies (see downloader below)
+3. **`imgTemplate`** — custom source, if configured
+4. **pokemontcg.io** — via `tcgSet`
+5. **TCGdex** — via `tcgdexSet` (both number paddings tried)
+6. Crystal placeholder
 
-### Tracking Cards
-- **Checkbox** — Click the OWNED/NEED label to toggle one card
-- **Quantity** — Click a card's `×N` tag to edit how many you own
-- **Bulk edit** — Directly edit the Google Sheet; changes sync automatically
+Each image walks this chain on error, so a missing card or API outage degrades gracefully. Set logos chain the same way (custom → pokemontcg.io → TCGdex → text title).
 
-### Images
-Images resolve in this priority order:
-1. **Sheet's Image column** — a URL there always wins (staff stamps, retailer exclusives, your own scans)
-2. **`img/` folder** — local copies downloaded by the image downloader tool (see below)
-3. **pokemontcg.io** — base card art auto-loaded by card number
-4. **Placeholder** — cards with no image show their initials in a crystal bubble
-
-Click any image to open it in the lightbox viewer (hi-res where available).
-
----
-
-## Customization
-
-### Prices
-All prices are plain £ text (e.g. `£3.50` or `~£4-11`). Ranges are averaged for the
-value stats. There is no currency conversion — write what you'd actually pay.
-
-### Data Source
-**Option 1: Google Sheets (live)**
-```javascript
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=1801512098&single=true&output=csv";
-```
-Changes sync within ~5 minutes. No republish needed.
-
-**Option 2: Local Excel file (offline)**
-```javascript
-const SHEET_URL = "";  // leave empty
-const FILE = "checklist.xlsx";
-```
-Place `checklist.xlsx` in the same folder as `index.html`.
-
-### Card Image URLs
-The tracker uses pokemontcg.io by default:
-- Set cards: `https://images.pokemontcg.io/sv7/NNN.png` (sv7 = Stellar Crown, NNN = card number)
-- SVP promos: `https://images.pokemontcg.io/svp/NNN.png`
-
-To use your own scans, add Image URLs in the sheet.
+Reverse holos: no API hosts true RH scans, so RH rows render the regular art with a foil-sheen overlay. Your own photos via the Image column display as-is.
 
 ---
 
 ## Image Downloader (`download_images.py`)
 
-A helper script that mirrors every image linked in your sheet's **Image** column into the repo, so the tracker serves them from GitHub Pages instead of hotlinking external sites (faster, and immune to link rot if a listing photo disappears).
-
-### Usage
+Mirrors every Image-column URL into the repo so GitHub Pages serves them (faster, immune to link rot).
 
 ```bash
-# 1. Export your Google Sheet as CSV: File → Download → Comma Separated Values (.csv)
-# 2. From the repo folder, run:
-python3 download_images.py sheet.csv stellar-crown   # <set-id> from sets.js
-
-# 3. Commit the results:
+# 1. Export the set's tab as CSV: File → Download → CSV
+# 2. From the repo folder:
+python3 download_images.py sheet.csv stellar-crown    # <set-id> from sets.js
+# 3. Commit:
 git add img/ && git commit -m "Mirror card images" && git push
 ```
 
-### What it does
+- Auto-detects header names (`No.`, `Variant / Stamp`, `Image URL` etc. all work) and prints what it matched
+- Writes `img/<set-id>/manifest.txt` mapping `Card|Number|Variant|filename`
+- Failed downloads are reported and never enter the manifest
+- Duplicate Card+Number+Variant rows are flagged instead of silently skipped
+- Requires Python 3, no packages; re-running is safe
 
-- Downloads each unique Image URL to `img/` with a stable filename (`cardname_hash.ext`)
-- Writes `img/manifest.txt` mapping `Card|Number|Variant|filename` — this is how `index.html` finds local copies
-- Skips rows without an Image URL; reports any failed downloads at the end
+---
 
-### Notes
+## Using the Tracker
 
-- Requires Python 3 (no extra packages)
-- Re-run it any time you add new Image URLs to the sheet; existing files are simply re-downloaded
-- The sheet's Image URL still takes priority on the live site — the `img/` folder is the fallback, so deleting a URL from the sheet makes the tracker use the mirrored copy
-- If no `img/` folder or manifest exists, the tracker behaves as before (no errors)
+- **Track**: edit the Have column in the sheet — the site is read-only by design and re-syncs within ~5 minutes
+- **Sort**: dropdown in the toolbar — sheet order / name / price ↑↓, applied within each group
+- **Filter**: search box, group dropdown, Missing Only
+- **Zoom**: click any card image; Esc, ✕, or clicking closes
+- **Stats**: completion ring, owned/missing, total copies, £ value owned, £ cost of gaps
 
 ---
 
 ## Troubleshooting
 
-**"HTML detection" yellow warning**
-- Your Google Sheet published URL is returning a web page instead of CSV
-- Solution: Go to **File → Share → Publish to web**, ensure "Entire spreadsheet" or your sheet tab is selected, copy the CSV URL (not the HTML URL)
+**"Got a web page, not CSV" warning** — the published link is the HTML view. Re-copy from File → Share → Publish to web with the tab + CSV selected.
 
-**Prices not converting**
-- Check that prices start with `$` in the sheet (e.g., `~$5-15`)
-- Verify `USD_TO_LOCAL` is set correctly
-- GBP-only prices (no `$`) pass through unchanged
+**New set shows another set's cards** — the sheet link reuses the wrong tab's `gid`. Each tab has its own; re-publish selecting the right tab.
 
-**Images not loading**
-- pokemontcg.io may be temporarily down; wait a moment and refresh
-- Try adding a custom Image URL for that card in the sheet
-- Check browser console (F12) for errors
+**No images for a new set** — pokemontcg.io stopped updating before the Mega era. Use `tcgdexSet` instead of `tcgSet` for those sets. If TCGdex placeholders persist, confirm the set id on tcgdex.net.
 
-**Sheet updates not showing**
-- Google Sheets publish has a ~5 minute cache delay
-- Try a hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
-- If using a local file, edit `.xlsx` and reload
+**Local img/ images not showing** — check `img/<set-id>/manifest.txt` exists and its `Card|Number|Variant` values match the sheet exactly; the sheet's Image URL wins, so clear that cell to see the local copy; re-run the downloader after renames.
 
-**Local img/ images not showing**
-- Check `img/manifest.txt` exists and its `Card|Number|Variant` values match the sheet exactly (case and spacing matter)
-- Remember the sheet's Image URL wins — clear that cell to see the local copy
-- Re-run `python3 download_images.py sheet.csv` after renaming cards or variants
+**Sheet edits not appearing** — Google's publish cache is ~5 minutes; hard-refresh (Ctrl+Shift+R).
 
-**Card numbers aren't being recognized**
-- Format as `NNN/142` (set cards) or `SVP NNN` (promos) to match pokemontcg.io URLs
-- Custom Image URLs override auto-detection
+**Wrong set opens from a link** — a missing or typo'd `?set=` id falls back to the first set in `sets.js`.
 
 ---
 
 ## Project Structure
 
 ```
-stellar-crown-promo-list/
-├── index.html              # Home page — lists all sets w/ progress
-├── tracker.html            # Tracker template (all sets share it)
+repo/
+├── index.html              # Home page — set tiles w/ logos + progress
+├── tracker.html            # Tracker template (all sets share it; never edited per set)
 ├── sets.js                 # ★ Set registry — the only file you edit to add sets
-├── checklist.xlsx          # Optional local fallback data
 ├── download_images.py      # Mirrors sheet Image URLs into img/<set-id>/
 ├── img/
 │   └── stellar-crown/      # Per-set downloaded images
 │       └── manifest.txt    # Card|Number|Variant → filename map
-└── README.md               # This file
+├── checklist.xlsx          # Optional local fallback data
+└── README.md
 ```
 
-All data lives in Google Sheets; `index.html` is the only file needed to display it.
-
 ---
 
-## Stellar Crown Promo Checklist
+## License & Credits
 
-This tracker covers:
-- **Prerelease promos** — SVP Black Star stamps (staff & regular)
-- **Build & Battle Box exclusives** — Non-holo versions (Ledian, Bouffalant, Archaludon)
-- **ETB promos** — Pokémon Center versions with stamps
-- **Retailer exclusives** — GameStop, Best Buy, EB Games, European regional
-- **Cosmos holo products** — Armarouge ex Box, Iron Valiant ex Box, Stage 1 blisters, etc.
-- **Holiday & event cards** — Holiday Calendar, Trick or Trade, Battle Academy deck-numbered variants
-- **Play! Pokémon Prize Packs** — Series 6, 7, & 8 stamped cards
-- **Battle Box league distribution** — April 2026 non-holo variants
-
-Across multiple finishes (non-holo, cosmos holofoil, STAFF stamps, Play! stamps) tracked individually.
-
----
-
-## Contributing
-
-Found a missing card, pricing error, or image link?
-- **Fork and submit a PR** with updates to `index.html` config or the checklist structure
-- **File an issue** on GitHub with details
-- **Update the Google Sheet** directly if you have edit access
-
----
-
-## License
-
-This project and checklist are provided as-is for the Pokémon TCG community. Pokémon and Pokémon card images are © The Pokémon Company International, Inc. Card images hosted via pokemontcg.io.
-
----
-
-## Credits
-
-- **Data source** — Bulbapedia, PokéBeach, TCG Collector, eBay community research
-- **Card images** — pokemontcg.io API
-- **Exchange rate** — Manually set; update as needed
-
----
-
-**Last updated:** July 2026  
-**Current scope:** Stellar Crown SV7, covering ~180+ promo & variant cards
+Provided as-is for the Pokémon TCG community. Not affiliated with The Pokémon Company; Pokémon and card images are © TPCi. Card images served via pokemontcg.io and TCGdex. Checklist data compiled from Bulbapedia, Serebii, PokéBeach, and community research.
