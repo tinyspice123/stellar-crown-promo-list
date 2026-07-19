@@ -45,7 +45,7 @@ const SETS = {
   "perfect-order": {
     name: "Perfect Order",
     code: "ME03",
-    sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=YOUR_TAB_GID&single=true&output=csv",
+    sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhhxFigR_Cyyp3Vi-Ne6yUBj2OrgG6VjbMNrBEzCm7dppuZkRgNj-9aeF7LbHYK3F3C4cIDm35GpE/pub?gid=1756238588&single=true&output=csv",
     tcgdexSet: "me03",   // images + logo come from TCGdex automatically
   },
 
