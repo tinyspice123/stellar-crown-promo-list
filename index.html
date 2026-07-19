@@ -4,18 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pokemon Card Tracker</title>
-<script src="sets.js">
-document.getElementById('setSearch').addEventListener('input', e=>{
-  const q=e.target.value.trim().toLowerCase();
-  let visible=0;
-  document.querySelectorAll('.setcard').forEach(card=>{
-    const hit=!q || card.dataset.search.includes(q);
-    card.classList.toggle('hidden', !hit);
-    if(hit) visible++;
-  });
-  document.getElementById('noResults').style.display = visible? 'none':'block';
-});
-</script>
+<script src="sets.js"></script>
 <style>
   :root{
     --night:#100e22; --panel:#1a1733; --panel2:#221e42; --line:#332e5c;
@@ -161,6 +150,17 @@ Object.entries(SETS).forEach(([id,cfg])=>{
     t.textContent=`${p.owned} / ${p.total} owned`;
     b.style.width=(p.total? (100*p.owned/p.total):0)+'%';
   }).catch(()=>{ a.querySelector('[data-prog]').textContent=''; });
+});
+
+document.getElementById('setSearch').addEventListener('input', e=>{
+  const q=e.target.value.trim().toLowerCase();
+  let visible=0;
+  document.querySelectorAll('.setcard').forEach(card=>{
+    const hit=!q || card.dataset.search.includes(q);
+    card.classList.toggle('hidden', !hit);
+    if(hit) visible++;
+  });
+  document.getElementById('noResults').style.display = visible? 'none':'block';
 });
 </script>
 </body>
