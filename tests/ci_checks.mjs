@@ -74,6 +74,13 @@ for (const file of ['index.html', 'tracker.html']) {
     }
     if (!csp.includes("object-src 'none'") || !csp.includes("base-uri 'none'"))
       fail('CSP is missing object-src/base-uri restrictions');
+    for (const style of [...html.matchAll(/<style>([\s\S]*?)<\/style>/gi)].map(match => match[1])) {
+      const hash = `'sha256-${crypto.createHash('sha256').update(style).digest('base64')}'`;
+      if (!csp.includes(hash)) fail(`CSP missing inline-style hash ${hash}`);
+    }
+    if (csp.includes("'unsafe-inline'")) fail("CSP must not allow 'unsafe-inline'");
+    if (/img-src[^;]*\shttps:\s*(?:;|$)/.test(csp))
+      fail('CSP image sources must use explicit hosts, not all HTTPS origins');
   }
   if (/\son[a-z]+\s*=/i.test(html)) fail('inline event handler blocked by CSP');
 

@@ -101,6 +101,8 @@ Each image walks this chain on error, so a missing card or API outage degrades g
 
 Reverse holos: no API hosts true RH scans, so RH rows render the regular art with a foil-sheen overlay. Your own photos via the Image column display as-is.
 
+For a direct external Image URL or custom logo/template host, add that exact HTTPS origin to `img-src` in both pages' Content Security Policy. Prefer `download_images.py`/`download_assets.py`, which keeps the asset under the existing `'self'` policy.
+
 ---
 
 ## Template Sheet
@@ -111,7 +113,7 @@ Reverse holos: no API hosts true RH scans, so RH rows render the regular art wit
 
 ## Browser Security
 
-Both pages also enforce a Content Security Policy. Inline scripts are authorized by exact hashes verified in CI, event-handler attributes are forbidden, and scripts, connections, frames, objects, and base URLs are restricted to the origins the tracker needs.
+Both pages also enforce a Content Security Policy. Inline scripts and styles are authorized by exact hashes verified in CI, event-handler attributes are forbidden, and scripts, images, connections, frames, objects, and base URLs are restricted to the origins the tracker needs. Google redirects published CSV downloads to generated `*.googleusercontent.com` hosts, so that wildcard is intentionally retained for `connect-src` only; it cannot load scripts, styles, or images.
 
 ---
 

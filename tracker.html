@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'sha256-mQiHDGB8egisn3yAYy0U8gzcT9DA7BbZ64IziPfNhT4=' 'sha256-YrPpGC+5U85WfTBbiyVT+hatbUuKrkPYdDo8TgIh10o='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://*.google.com https://*.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'sha256-ycJTN2OXUB7XzyzK2xC53vONmCkPls/enzKl0WLA/k0=' 'sha256-YrPpGC+5U85WfTBbiyVT+hatbUuKrkPYdDo8TgIh10o='; style-src 'self' https://fonts.googleapis.com 'sha256-AakcW3I/5VGmZUfFO/V9ETB5fZ/iN3IkoB3EZoKgtHM='; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.pokemontcg.io https://assets.tcgdex.net; connect-src 'self' https://docs.google.com https://*.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
 <title>Stellar Crown — Collection Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
   integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
@@ -179,6 +179,8 @@
     background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-size:12px;
     border-radius:999px;padding:8px 16px;opacity:0;transition:opacity .25s;pointer-events:none}
   #saveToast.show{opacity:1}
+  .initially-hidden{display:none}
+  .notice-title{margin-bottom:8px;color:#ffd47e}
   .empty{display:none;text-align:center;color:var(--dim);padding:60px 0;font-size:14px}
   footer{max-width:1180px;margin:50px auto 0;padding:0 20px;font-size:11px;color:var(--faint);line-height:1.6}
   :focus-visible{outline:2px solid var(--tera2);outline-offset:2px}
@@ -195,8 +197,8 @@
   <a class="backlink" href="index.html">← All sets</a>
   <div class="eyebrow" id="eyebrowText">Pokémon TCG</div>
   <img class="setlogo" id="setLogo" alt="">
-  <h1 id="titleFallback" style="display:none"><span id="fallbackName" class="tera">Set</span></h1>
-  <div class="subtitle" id="subtitleText" style="display:none"></div>
+  <h1 id="titleFallback" class="initially-hidden"><span id="fallbackName" class="tera">Set</span></h1>
+  <div class="subtitle initially-hidden" id="subtitleText"></div>
 </header>
 
 <div class="notice" id="notice">
@@ -264,7 +266,7 @@
 <main id="main"></main>
 <div class="empty" id="empty">Nothing matches those filters.</div>
 
-<footer id="foot" style="display:none">
+<footer id="foot" class="initially-hidden">
   This page is read-only: edit quantities in <span id="fnameFoot">checklist.xlsx</span> (the Have column — “x” or a number),
   save, and refresh. Card photos come from pokemontcg.io by card number; jumbo, staff and unusual variants show a crystal
   placeholder. Prices are read from the sheet's NM Price column.
@@ -343,7 +345,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     const n=document.getElementById('notice');
     n.style.display='block';
     n.querySelector('.inner').insertAdjacentHTML('afterbegin',
-      '<div style="margin-bottom:8px;color:#ffd47e">No sheet configured for this set yet — '+
+      '<div class="notice-title">No sheet configured for this set yet — '+
       'add its published CSV link to <b>sets.js</b> (see the commented sheet line).</div>');
     return;
   }
@@ -366,7 +368,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     const n=document.getElementById('notice');
     n.style.display='block';
     n.querySelector('.inner').insertAdjacentHTML('afterbegin',
-      '<div style="margin-bottom:8px;color:#ffd47e">'+esc(String(e.message||e))+'</div>');
+      '<div class="notice-title">'+esc(String(e.message||e))+'</div>');
   }
 });
 
