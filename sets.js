@@ -16,16 +16,6 @@
 //   logo / imgTemplate / promoSet / subtitle / eyebrow / file / tab: optional
 // =====================================================================
 
-// ---------------------------------------------------------------------
-//  OPTIONAL WRITE-BACK (see README > "Editing Quantities from the Website")
-//  Un-comment and paste your Apps Script deployment URL to enable +/-
-//  editing. This URL is PUBLIC - anyone can read it via view-source,
-//  and that's fine: writes are protected by the WRITE_PIN you set in
-//  the Apps Script project's Script properties, which never appears
-//  anywhere in this repo.
-// ---------------------------------------------------------------------
-// const WRITE_URL = "https://script.google.com/macros/s/XXXX/exec";
-
 const SETS = {
 
   // ==================================================================

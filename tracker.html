@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'sha256-mQiHDGB8egisn3yAYy0U8gzcT9DA7BbZ64IziPfNhT4=' 'sha256-YrPpGC+5U85WfTBbiyVT+hatbUuKrkPYdDo8TgIh10o='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://*.google.com https://*.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
 <title>Stellar Crown — Collection Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
   integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
@@ -101,7 +102,6 @@
   .listtable .variant,.listtable .source{color:var(--dim)}
   .listtable .price{color:var(--tera4);white-space:nowrap}
   .listtable .havechip{position:static;display:inline-block;white-space:nowrap}
-  .listtable .qtyctl{border:0;padding:0;justify-content:flex-start;white-space:nowrap}
   .listtable .qtytag{border:0;padding:0;text-align:left}
   .item{
     background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
@@ -175,12 +175,6 @@
   .exportmenu button{display:block;width:100%;text-align:left;background:none;border:0;
     color:var(--ink);font:inherit;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer}
   .exportmenu button:hover{background:var(--panel)}
-  .qtyctl{border-top:1px solid var(--line);padding:5px 0;display:flex;align-items:center;justify-content:center;gap:8px}
-  .qtyctl button{width:24px;height:24px;border-radius:8px;border:1px solid var(--line);
-    background:var(--panel);color:var(--ink);font-size:14px;line-height:1;cursor:pointer}
-  .qtyctl button:hover{border-color:var(--tera2)}
-  .qtyctl span{min-width:34px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px}
-  .qtyctl span.zero{color:var(--faint)}
   #saveToast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;
     background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-size:12px;
     border-radius:999px;padding:8px 16px;opacity:0;transition:opacity .25s;pointer-events:none}
@@ -395,14 +389,6 @@ function parseRows(rows){
   document.getElementById('stats').style.display='grid';
   document.getElementById('controls').style.display='flex';
   const foot=document.getElementById('foot');
-  if(WRITE_OK){
-    foot.innerHTML='Editing is enabled: the +/\u2212 buttons write the Have column straight to the Google Sheet '+
-      '(PIN-protected; the PIN is remembered on this device only). '+
-      '<a href="#" id="pinReset">Forget / change PIN</a>. A page reload can show values up to ~5 min old \u2014 Google\u2019s publish cache.';
-    document.getElementById('pinReset').addEventListener('click',e=>{
-      e.preventDefault(); forgetPin(); toast('PIN forgotten \u2014 you\u2019ll be asked on the next edit');
-    });
-  }
   foot.style.display='block';
 }
 
@@ -459,13 +445,6 @@ function storageSet(key,value){
     return false;
   }
 }
-function storageRemove(key){
-  try{ localStorage.removeItem(key); return true; }
-  catch(error){
-    noteStorageFailure('delete',error);
-    return false;
-  }
-}
 let collapsed=new Set();
 try{ collapsed=new Set(JSON.parse(storageGet(COLLAPSE_KEY)||'[]')); }
 catch(error){
@@ -480,22 +459,6 @@ function toggleGroup(g){
   render();
 }
 
-const WRITE_OK = (typeof WRITE_URL!=="undefined") && WRITE_URL;
-
-// The write URL is public (sets.js is view-source-able) - the PIN is the
-// secret. It's asked for once, kept in this browser's localStorage, and
-// checked server-side by the Apps Script before any write happens.
-const PIN_KEY='tracker:pin';
-function getPin(){
-  let p=storageGet(PIN_KEY);
-  if(p) return p;
-  p=prompt('Enter the edit PIN for this tracker\n(set in the sheet\u2019s Apps Script \u2192 Script properties):');
-  if(p===null || !p.trim()) return null;
-  p=p.trim();
-  storageSet(PIN_KEY,p);
-  return p;
-}
-function forgetPin(){ storageRemove(PIN_KEY); }
 let toastTimer=null;
 function toast(msg){
   let el=document.getElementById('saveToast');
@@ -503,34 +466,6 @@ function toast(msg){
   el.textContent=msg; el.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),1600);
 }
-function changeQty(it,delta,cardDiv){
-  const pin=getPin();
-  if(pin===null){ toast('Editing needs the PIN'); return; }
-  const prev=Math.trunc(it.qty);
-  it.qty=Math.max(0,prev+delta);
-  // update this card in place (optimistic)
-  const span=cardDiv.querySelector('[data-qty] span');
-  span.textContent='\u00d7'+it.qty;
-  span.classList.toggle('zero', !it.qty);
-  const chip=cardDiv.querySelector('.havechip');
-  if(chip){ chip.textContent=it.qty>0?'OWNED':'NEED'; chip.classList.toggle('y',it.qty>0); chip.classList.toggle('n',it.qty<=0); }
-  stats();
-  // CORS mode (text/plain = no preflight; Apps Script's redirect target
-  // sends Access-Control-Allow-Origin:*) so we can READ the verdict and
-  // catch a wrong PIN instead of silently pretending it saved.
-  fetch(WRITE_URL,{method:'POST',
-    headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({pin, tab:cfg.tab||cfg.name, card:it.card, num:it.num, variant:it.variant, qty:it.qty})
-  }).then(r=>r.json()).then(res=>{
-    if(res && res.ok===false){
-      if(/pin|locked/i.test(res.error||'')) forgetPin();
-      it.qty=prev; render();  // roll back the optimistic edit
-      toast(res.error==='bad pin' ? 'Wrong PIN \u2014 tap again to retry'
-           : 'Not saved: '+(res.error||'server error'));
-    } else toast('Saved to sheet');
-  }).catch(()=>toast('Save not confirmed \u2014 check connection'));
-}
-
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const gsel=document.getElementById('groupSel').value;
@@ -621,21 +556,11 @@ function cardEl(it){
   const url=cands[0]||null, alts=cands.slice(1);
   const initial=esc(it.card.replace(/[^A-Za-z]/g,'').slice(0,2)||'?');
   const zeroCls = it.qty ? '' : 'zero';
-  let qtyHtml;
-  if(WRITE_OK){
-    qtyHtml=`<div class="qtyctl" data-qty>
-           <button type="button" data-dec aria-label="one fewer">−</button>
-           <span class="${zeroCls}">×${it.qty}</span>
-           <button type="button" data-inc aria-label="one more">+</button>
-         </div>`;
-  }else{
-    qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
-  }
+  const qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
   d.innerHTML=`
     <div class="imgwrap${/reverse\s*holo/i.test(it.variant)?' rh':''}">
       ${url?`<img loading="lazy" decoding="async" fetchpriority="low" alt="${esc(it.card)}" data-src="${url}"
-        data-alts="${esc(alts.join('|'))}" data-ph="${initial}"
-        onerror="__imgFallback(this)">`
+        data-alts="${esc(alts.join('|'))}" data-ph="${initial}">`
         :`<div class="ph"><b>${initial}</b><span>variant</span></div>`}
       ${it.price?`<span class="pricechip">${esc(it.price)}</span>`:''}
       <span class="havechip ${it.qty>0?'y':'n'}">${it.qty>0?'OWNED':'NEED'}</span>
@@ -650,10 +575,9 @@ function cardEl(it){
     </div>
     ${qtyHtml}`;
   const img=d.querySelector('.imgwrap img');
-  if(img) img.addEventListener('click',()=>openLightbox(it,img.src));
-  if(WRITE_OK){
-    d.querySelector('[data-dec]').addEventListener('click',()=>changeQty(it,-1,d));
-    d.querySelector('[data-inc]').addEventListener('click',()=>changeQty(it,+1,d));
+  if(img){
+    img.addEventListener('error',()=>__imgFallback(img));
+    img.addEventListener('click',()=>openLightbox(it,img.src));
   }
   d.__item=it;
   return d;
@@ -663,9 +587,7 @@ function rowEl(it){
   const row=document.createElement('tr');
   row.className=it.qty>0?'owned':'';
   const zeroCls=it.qty?'':'zero';
-  const qtyHtml=WRITE_OK
-    ? `<div class="qtyctl" data-qty><button type="button" data-dec aria-label="one fewer">−</button><span class="${zeroCls}">×${it.qty}</span><button type="button" data-inc aria-label="one more">+</button></div>`
-    : `<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
+  const qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
   row.innerHTML=`
     <td class="cardname">${esc(it.card)}</td>
     <td class="cardnum">${esc(it.num)}</td>
@@ -674,10 +596,6 @@ function rowEl(it){
     <td class="price">${esc(it.price)}</td>
     <td><span class="havechip ${it.qty>0?'y':'n'}">${it.qty>0?'OWNED':'NEED'}</span></td>
     <td>${qtyHtml}</td>`;
-  if(WRITE_OK){
-    row.querySelector('[data-dec]').addEventListener('click',()=>changeQty(it,-1,row));
-    row.querySelector('[data-inc]').addEventListener('click',()=>changeQty(it,+1,row));
-  }
   return row;
 }
 

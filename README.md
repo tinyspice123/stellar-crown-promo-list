@@ -19,7 +19,7 @@ A multi-set, template-driven card checklist site. A home page lists your sets wi
 - **Two image APIs + fallback chain** — pokemontcg.io for older sets, TCGdex for newer ones (Mega era onward); each image tries its sources in order and heals itself if one is down
 - **Custom images** — Per-row Image URLs in the sheet always win; an image downloader mirrors them into the repo
 - **Offline fallback** — Optional local `.xlsx` per set if the sheet is unreachable
-- **Optional write-back** — With a small Apps Script deployed on the spreadsheet, PIN-protected +/− buttons on each card edit the Have column from the website
+- **Read-only by design** — Collection state comes from the published CSV; edit quantities only in Google Sheets
 - **Self-hosted assets** — `download_assets.py` mirrors set logos into the repo; the site prefers local copies
 - **Collapsible groups** — Click any group header to fold/unfold it; state remembered per set
 - **Keyboard shortcuts** — `/` focuses search, `m` toggles Missing only, ←/→ browse cards in the lightbox, Esc closes
@@ -109,19 +109,9 @@ Reverse holos: no API hosts true RH scans, so RH rows render the regular art wit
 
 ---
 
-## Editing Quantities from the Website (optional)
+## Browser Security
 
-By default the site is read-only. To enable the +/− buttons on cards:
-
-1. Open the spreadsheet → Extensions → Apps Script → paste `apps-script/Code.gs`
-2. Deploy → New deployment → Web app → *Execute as: Me* · *Access: Anyone*
-3. Copy the web-app URL into `WRITE_URL` at the top of `sets.js` (un-comment the line)
-4. In the Apps Script editor: Project Settings (⚙) → **Script properties** → add property `WRITE_PIN` with your PIN — a word or short phrase beats 4 digits
-5. Ensure every set entry's `tab` matches its exact Google tab name
-
-**Security model.** `sets.js` is served as a plain static file, so `WRITE_URL` is public by definition — anyone can view-source it, and that's fine. The secret is the **PIN**: it lives only in Script properties (server side, never in the repo), the site asks each visitor for it once and remembers it in that browser's `localStorage`, and the server refuses any write without it. Ten wrong PINs lock all writes for 10 minutes, so it can't be brute-forced. Even a correct PIN can only change the Have column of existing rows. Wrong-PIN edits roll back on screen with a toast; the *Forget / change PIN* link in the page footer clears the stored PIN. Revoke everything by deleting the deployment.
-
-Edits are optimistic (instant on screen) and confirmed against the server's response; the Google publish cache still means a page *reload* can show values up to ~5 min old.
+Both pages also enforce a Content Security Policy. Inline scripts are authorized by exact hashes verified in CI, event-handler attributes are forbidden, and scripts, connections, frames, objects, and base URLs are restricted to the origins the tracker needs.
 
 ---
 
@@ -137,7 +127,7 @@ Edits are optimistic (instant on screen) and confirmed against the server's resp
 
 `.github/workflows/ci-quality-deploy.yml` is a single pipeline — tests, quality/security analysis, then deploy. On every push to `main` and every PR:
 - **Site checks** (`tests/ci_checks.mjs`, zero dependencies): sets.js parses and uses kebab-case, non-numeric ids; sheet links are CSV publish links with no leftover `PASTE_TAB_GID` or shared gids; inline scripts in both pages are syntactically valid; `lib.js` parses and is loaded by both pages; the service worker precaches every script the pages load (this caught a real "offline PWA loads a 404" bug once); required element ids exist
-- **`lib.js` unit tests** (`tests/lib.test.mjs`, Node's built-in test runner): CSV parsing edge cases, price-range averaging, Have/qty parsing, column auto-detection, the image fallback chain, sorting, and both export formats
+- **JavaScript behavioral tests** (`tests/lib.test.mjs`, `tests/sw.test.mjs`): tracker data logic and service-worker caching/offline behavior
 - **Python tests** (`tests/`): `download_images.py`'s header auto-detection, manifest format, and duplicate/failed-download handling; `sets_js.py`'s entry/field parsing and comment-stripping — the one shared parser `download_assets.py`, `backup_sheets.py`, and `check_logos.py` all depend on
 - **Deploy** publishes the repo to GitHub Pages **only if all test jobs pass** (skipped on PRs), so a broken commit can't take the live site down
 
@@ -204,7 +194,7 @@ git add img/ && git commit -m "Mirror card images" && git push
 repo/
 ├── index.html              # Home page — set tiles w/ logos, search, progress
 ├── tracker.html            # Tracker template (all sets share it; never edited per set)
-├── sets.js                 # ★ Set registry + WRITE_URL — the only file you configure
+├── sets.js                 # ★ Set registry — the only file you configure
 ├── lib.js                  # Shared pure logic (CSV parsing, price/qty math, image fallback chain)
 ├── template.csv            # Example sheet tab to copy for new sets
 ├── scripts/
@@ -213,7 +203,6 @@ repo/
 │   ├── check_logos.py      # Read-only check that every set's logo source resolves
 │   ├── backup_sheets.py    # fetches all sheets into backups/ (used by the Action)
 │   └── sets_js.py          # Shared sets.js parser used by the three scripts above
-├── apps-script/Code.gs     # Optional write-back endpoint (paste into Apps Script)
 ├── tests/                  # CI checks + lib.js unit tests (node) + script unit tests (python)
 ├── .github/renovate.json   # Automated dependency updates (Renovate)
 ├── .github/workflows/ci-quality-deploy.yml # tests → quality/security → deploy

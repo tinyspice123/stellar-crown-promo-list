@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3fX4b8+n1xMZpkQZYWajdbg30nhq/EIYhvOmyXMuDTE=' 'sha256-YrPpGC+5U85WfTBbiyVT+hatbUuKrkPYdDo8TgIh10o='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://*.google.com https://*.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
 <title>Pokemon Card Tracker</title>
 <script src="sets.js"></script>
 <script src="lib.js"></script>
@@ -131,11 +132,19 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   if(sm) logoCands.push('https://assets.tcgdex.net/en/'+sm[0].toLowerCase()+'/'+cfg.tcgdexSet+'/logo.png');
   const logo=logoCands[0]||'';
   a.innerHTML=`
-    <img src="${logo}" alt="${cfg.name}"
-      data-alts="${logoCands.slice(1).join('|')}"
-      onerror="const a=(this.dataset.alts||'').split('|').filter(Boolean); if(a.length){this.dataset.alts=a.slice(1).join('|');this.src=a[0];}else{this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg',textContent:'${cfg.name.replaceAll("'", String.raw`\'`)}'}))}">
-    <div class="meta"><span class="code">${cfg.tcgSet||cfg.code||""}</span><span class="prog" data-prog>…</span></div>
+    <img src="${esc(logo)}" alt="${esc(cfg.name)}"
+      data-alts="${esc(logoCands.slice(1).join('|'))}">
+    <div class="meta"><span class="code">${esc(cfg.tcgSet||cfg.code||"")}</span><span class="prog" data-prog>…</span></div>
     <div class="bar"><i data-bar></i></div>`;
+  a.querySelector('img').addEventListener('error',function(){
+    const alternatives=(this.dataset.alts||'').split('|').filter(Boolean);
+    if(alternatives.length){
+      this.dataset.alts=alternatives.slice(1).join('|'); this.src=alternatives[0];
+    }else{
+      this.replaceWith(Object.assign(document.createElement('div'),
+        {className:'noimg',textContent:cfg.name}));
+    }
+  });
   a.dataset.search=(id+" "+cfg.name+" "+(cfg.tcgSet||"")+" "+(cfg.code||"")+" "+(cfg.tcgdexSet||"")).toLowerCase();
   main.appendChild(a);
   if(!cfg.sheet){

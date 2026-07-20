@@ -1,5 +1,6 @@
 // Zero-dependency CI checks for the tracker site. Run: node tests/ci_checks.mjs
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 let failures = 0;
 const fail = m => { console.error('  FAIL ' + m); failures++; };
 const ok = m => console.log('  ok ' + m);
@@ -63,6 +64,18 @@ for (const file of ['index.html', 'tracker.html']) {
       ok(`inline script ${i + 1} syntax OK`);
     } catch (e) { fail(`inline script ${i + 1} syntax error: ${e.message}`); }
   });
+
+  const csp = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/i)?.[1];
+  if (!csp) fail('Content Security Policy meta tag missing');
+  else {
+    for (const script of scripts) {
+      const hash = `'sha256-${crypto.createHash('sha256').update(script).digest('base64')}'`;
+      if (!csp.includes(hash)) fail(`CSP missing inline-script hash ${hash}`);
+    }
+    if (!csp.includes("object-src 'none'") || !csp.includes("base-uri 'none'"))
+      fail('CSP is missing object-src/base-uri restrictions');
+  }
+  if (/\son[a-z]+\s*=/i.test(html)) fail('inline event handler blocked by CSP');
 
   const requiredIds = file === 'index.html'
     ? ['sets', 'setSearch', 'noResults']

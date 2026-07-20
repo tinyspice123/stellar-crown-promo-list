@@ -9,8 +9,6 @@ from sets_js import _extract_fields, parse_sets, strip_comments  # noqa: E402
 
 SAMPLE = '''
 // header comment
-const WRITE_URL = "https://example.com/exec";
-
 const SETS = {
 
   "stellar-crown": {          // release comment
