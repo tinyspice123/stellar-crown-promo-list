@@ -23,8 +23,7 @@
     padding:5px 12px;background:var(--panel)}
   .backlink:hover{color:var(--ink);border-color:var(--tera2)}
   .eyebrow{font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--dim)}
-  .setlogo{display:block;width:fit-content;max-width:min(360px,82vw);margin:2px auto 6px;
-    text-align:center;
+  .setlogo{display:block;max-width:min(360px,82vw);margin:2px auto 6px;
     filter:drop-shadow(0 6px 22px rgba(141,180,255,.38)) drop-shadow(0 0 40px rgba(226,155,255,.18))}
   .subtitle{text-align:center;font-size:14px;letter-spacing:.22em;text-transform:uppercase;
     color:var(--dim);margin-bottom:2px}
@@ -110,7 +109,7 @@
     position:absolute;left:6px;bottom:6px;z-index:2;font-size:9px;font-weight:700;
     letter-spacing:.08em;padding:2px 6px;border-radius:6px;color:#100e22;
     background:var(--crystal);opacity:.92}
-  .lightbox{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  .lightbox{position:fixed;inset:0;width:100vw;height:100vh;z-index:50;display:none;align-items:center;justify-content:center;
     margin:0;border:0;max-width:none;max-height:none;
     background:rgba(10,8,24,.88);backdrop-filter:blur(4px);padding:24px;cursor:zoom-out}
   .lightbox[open]{display:flex}
