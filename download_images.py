@@ -34,7 +34,7 @@ if len(sys.argv) < 2:
     print(__doc__)
     sys.exit(1)
 
-csv_file = Path(sys.argv[1])
+csv_file = Path(sys.argv[1]).resolve()  # canonicalize before any validation or access
 set_id = sys.argv[2] if len(sys.argv) > 2 else ""
 # validate before it ever reaches a path join: a set id with a path
 # separator or ".." would otherwise let img_dir escape img/ entirely

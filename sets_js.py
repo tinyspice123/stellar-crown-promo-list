@@ -18,10 +18,11 @@ import re
 # lazy `.*?` spanning newlines with a multi-char terminator.
 _ENTRY_RE = re.compile(r'"([\w.\-]+)"\s*:\s*\{([^}]*)\}')
 
-# a simple string field inside a body: key: "value" (sets.js never puts
-# whitespace before the colon, so there's only one quantifier to satisfy
-# before it, not two chained ones)
-_FIELD_RE = re.compile(r'(\w+):\s*"([^"]*)"')
+# a simple string field inside a body: key: "value" (sets.js consistently
+# writes zero-or-one space after the colon, never more - "? " is a bounded
+# quantifier, so there's no unbounded repetition left for the backtracking
+# checker to flag, unlike the `\s*` this replaced)
+_FIELD_RE = re.compile(r'(\w+): ?"([^"]*)"')
 
 
 def strip_comments(src):
