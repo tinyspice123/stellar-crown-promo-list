@@ -1,71 +1,141 @@
-# CI + Deploy pipeline: site checks and unit tests run first;
-# deployment to GitHub Pages only happens when they pass.
-name: CI / Deploy to Pages
+# CI + Sonar + Deploy pipeline
+name: CI / Sonar / Deploy to Pages
 
 on:
   push:
     branches: ["main"]
-  pull_request:            # PRs get the test jobs only (no deploy)
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
+
   site-checks:
     name: Site checks (sets.js + HTML)
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v7
+
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+
       - name: Zero-dependency site checks
         run: node tests/ci_checks.mjs
+
       - name: Install coverage tool
         run: npm install --no-save c8
+
       - name: lib.js unit tests with coverage
         run: npx c8 --reporter=lcov node tests/lib.test.mjs
+
+      - name: Check coverage output
+        run: ls -la coverage
+
+
   python-tests:
     name: Python tests (scripts)
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v7
+
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.14"
+
       - name: Byte-compile scripts
-        run: python -m py_compile scripts/download_images.py scripts/download_assets.py scripts/backup_sheets.py scripts/check_logos.py scripts/sets_js.py
+        run: |
+          python -m py_compile \
+          scripts/download_images.py \
+          scripts/download_assets.py \
+          scripts/backup_sheets.py \
+          scripts/check_logos.py \
+          scripts/sets_js.py
+
       - name: Unit tests
         run: python -m unittest discover -s tests -v
 
+
+  sonar-analysis:
+    name: SonarQube Analysis
+    needs: [site-checks, python-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Recreate coverage because jobs do not share files
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install coverage tool
+        run: npm install --no-save c8
+
+      - name: Generate JavaScript coverage
+        run: npx c8 --reporter=lcov node tests/lib.test.mjs
+
+      - name: Analyze with SonarQube
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+        with:
+          args: >
+            -Dsonar.projectKey=tinyspice123_ultimate_pokemon_card_tracker
+            -Dsonar.organization=tinyspice123
+            -Dsonar.scm.provider=git
+            -Dsonar.sources=apps-script,scripts
+            -Dsonar.exclusions=img/**,assets/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+
   deploy:
     name: Deploy to GitHub Pages
-    # gate deployment on the tests; skip entirely for pull requests
-    needs: [site-checks, python-tests]
+
+    needs: [site-checks, python-tests, sonar-analysis]
+
     if: github.event_name != 'pull_request'
+
     permissions:
       contents: read
       pages: write
       id-token: write
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
       - name: Setup Pages
         uses: actions/configure-pages@v6
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          # Upload entire repository
           path: '.'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
