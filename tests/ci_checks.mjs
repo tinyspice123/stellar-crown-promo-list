@@ -1,5 +1,5 @@
 // Zero-dependency CI checks for the tracker site. Run: node tests/ci_checks.mjs
-import fs from 'fs';
+import fs from 'node:fs';
 let failures = 0;
 const fail = m => { console.error('  FAIL ' + m); failures++; };
 const ok = m => console.log('  ok ' + m);
@@ -8,7 +8,10 @@ const ok = m => console.log('  ok ' + m);
 console.log('sets.js');
 const setsSrc = fs.readFileSync('sets.js', 'utf8');
 let SETS;
-try { SETS = new Function(setsSrc + '; return SETS;')(); ok('parses'); }
+// This CI-only script evals the repo's own checked-in sets.js to validate its
+// syntax, with zero external/network input; there's no dependency-free way to
+// parse JS syntax in Node without a real parser package (same reasoning below).
+try { SETS = new Function(setsSrc + '; return SETS;')(); ok('parses'); } // NOSONAR
 catch (e) { fail('does not parse: ' + e.message); process.exit(1); }
 
 const ids = Object.keys(SETS);
@@ -46,7 +49,7 @@ for (const file of ['index.html', 'tracker.html']) {
   if (!scripts.length) fail('no inline script found');
   scripts.forEach((s, i) => {
     try {
-      new Function(s.replace(/\bdocument\./g, '__d.').replace(/\blocation\./g, '__l.').replace(/\bwindow\./g, '__w.'));
+      new Function(s.replace(/\bdocument\./g, '__d.').replace(/\blocation\./g, '__l.').replace(/\bwindow\./g, '__w.')); // NOSONAR
       ok(`inline script ${i + 1} syntax OK`);
     } catch (e) { fail(`inline script ${i + 1} syntax error: ${e.message}`); }
   });
@@ -63,7 +66,7 @@ for (const file of ['index.html', 'tracker.html']) {
 
 // ---------- lib.js ----------
 console.log('lib.js');
-try { new Function(fs.readFileSync('lib.js', 'utf8')); ok('syntax OK'); }
+try { new Function(fs.readFileSync('lib.js', 'utf8')); ok('syntax OK'); } // NOSONAR
 catch (e) { fail('syntax error: ' + e.message); }
 for (const file of ['index.html', 'tracker.html']) {
   if (!fs.readFileSync(file, 'utf8').includes('<script src="lib.js">')) fail(`${file} does not load lib.js`);
@@ -82,17 +85,17 @@ const swSrc = fs.readFileSync('sw.js', 'utf8');
 const shellM = swSrc.match(/const SHELL = \[([^\]]*)\]/);
 if (!shellM) fail('sw.js: SHELL list not found');
 else {
-  const shell = [...shellM[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+  const shell = new Set([...shellM[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
   for (const page of ['index.html', 'tracker.html']) {
     const srcs = [...fs.readFileSync(page, 'utf8').matchAll(/<script src="([^"]+)"/g)]
       .map(m => m[1]).filter(s => !/^https?:/.test(s));
     for (const s of srcs) {
-      if (shell.includes(s)) ok(`${page}: ${s} is precached`);
+      if (shell.has(s)) ok(`${page}: ${s} is precached`);
       else fail(`${page} loads ${s} but sw.js SHELL doesn't precache it - offline PWA would break`);
     }
   }
 }
-try { new Function(fs.readFileSync('sw.js', 'utf8').replace(/\bself\./g,'__s.').replace(/\blocation\./g,'__l.').replace(/\bcaches\./g,'__c.')); ok('sw.js syntax OK'); }
+try { new Function(fs.readFileSync('sw.js', 'utf8').replace(/\bself\./g,'__s.').replace(/\blocation\./g,'__l.').replace(/\bcaches\./g,'__c.')); ok('sw.js syntax OK'); } // NOSONAR
 catch (e) { fail('sw.js syntax error: ' + e.message); }
 
 console.log(failures ? `\n${failures} check(s) FAILED` : '\nAll checks passed');

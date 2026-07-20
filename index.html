@@ -67,7 +67,7 @@
   <div class="tagline">Pick a set to open its checklist</div>
 </header>
 
-<input type="search" class="homesearch" id="setSearch"
+<input type="search" class="homesearch" id="setSearch" aria-label="Search sets"
   placeholder="Search sets…" autocomplete="off">
 <main class="sets" id="sets"></main>
 <p class="noresults" id="noResults">No sets match — try a different name.</p>
@@ -83,9 +83,9 @@ const main=document.getElementById('sets');
 async function progress(cfg){
   if(!cfg.sheet) return null;
   const res=await fetch(cfg.sheet,{cache:"no-store"});
-  if(!res.ok) throw 0;
+  if(!res.ok) throw new Error('sheet fetch failed: '+res.status);
   const text=await res.text();
-  if(/^\s*</.test(text)) throw 0;
+  if(/^\s*</.test(text)) throw new Error('got a web page, not CSV');
   const rows=csvToRows(text);
   // find header row: needs a "card"-ish and "have"-ish column
   let hi=-1,ci=-1,haveI=-1;
@@ -133,7 +133,7 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   a.innerHTML=`
     <img src="${logo}" alt="${cfg.name}"
       data-alts="${logoCands.slice(1).join('|')}"
-      onerror="const a=(this.dataset.alts||'').split('|').filter(Boolean); if(a.length){this.dataset.alts=a.slice(1).join('|');this.src=a[0];}else{this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg',textContent:'${cfg.name.replace(/'/g,"\\'")}'}))}">
+      onerror="const a=(this.dataset.alts||'').split('|').filter(Boolean); if(a.length){this.dataset.alts=a.slice(1).join('|');this.src=a[0];}else{this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg',textContent:'${cfg.name.replaceAll("'", String.raw`\'`)}'}))}">
     <div class="meta"><span class="code">${cfg.tcgSet||cfg.code||""}</span><span class="prog" data-prog>…</span></div>
     <div class="bar"><i data-bar></i></div>`;
   a.dataset.search=(id+" "+cfg.name+" "+(cfg.tcgSet||"")+" "+(cfg.code||"")+" "+(cfg.tcgdexSet||"")).toLowerCase();

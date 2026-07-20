@@ -12,11 +12,16 @@ comments used to deactivate whole entries or individual fields.
 """
 import re
 
-# an active entry: quoted id (letters/digits/dot/dash), then a {...} body
-_ENTRY_RE = re.compile(r'"([\w.\-]+)"\s*:\s*\{(.*?)\n\s*\}', re.S)
+# an active entry: quoted id (letters/digits/dot/dash), then a {...} body.
+# Entry bodies are flat (no nested braces), so a negated character class
+# finds the closing brace directly - no ambiguous backtracking, unlike a
+# lazy `.*?` spanning newlines with a multi-char terminator.
+_ENTRY_RE = re.compile(r'"([\w.\-]+)"\s*:\s*\{([^}]*)\}')
 
-# a simple string field inside a body: key: "value"
-_FIELD_RE = re.compile(r'(\w+)\s*:\s*"([^"]*)"')
+# a simple string field inside a body: key: "value" (sets.js never puts
+# whitespace before the colon, so there's only one quantifier to satisfy
+# before it, not two chained ones)
+_FIELD_RE = re.compile(r'(\w+):\s*"([^"]*)"')
 
 
 def strip_comments(src):
@@ -36,7 +41,7 @@ def parse_sets(src):
     entries = []
     for m in _ENTRY_RE.finditer(strip_comments(src)):
         sid, body = m.group(1), m.group(2)
-        fields = {k: v for k, v in _FIELD_RE.findall(body)}
+        fields = dict(_FIELD_RE.findall(body))
         fields["id"] = sid
         entries.append(fields)
     return entries

@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stellar Crown — Collection Tracker</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+  integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="sets.js"></script>
 <script src="lib.js"></script>
 <style>
@@ -83,7 +85,7 @@
   select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink);font-family:inherit;font-size:13px;outline:none}
 
   main{max-width:1180px;margin:8px auto 0;padding:0 20px}
-  .grouphead{margin:30px 0 12px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .grouphead{margin:30px 0 12px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;cursor:pointer;user-select:none}
   .grouphead h2{font-family:"Unbounded",sans-serif;font-size:14px;font-weight:600;letter-spacing:.02em}
   .grouphead .count{font-size:11px;color:var(--dim)}
   .grouphead::after{content:"";flex:1;height:1px;background:var(--line);align-self:center}
@@ -113,11 +115,11 @@
     position:absolute;left:6px;bottom:6px;z-index:2;font-size:9px;font-weight:700;
     letter-spacing:.08em;padding:2px 6px;border-radius:6px;color:#100e22;
     background:var(--crystal);opacity:.92}
-  .lightbox figure{position:relative}
   .lightbox{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+    margin:0;border:0;max-width:none;max-height:none;
     background:rgba(10,8,24,.88);backdrop-filter:blur(4px);padding:24px;cursor:zoom-out}
-  .lightbox.open{display:flex}
-  .lightbox figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:min(92vw,560px)}
+  .lightbox[open]{display:flex}
+  .lightbox figure{position:relative;margin:0;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:min(92vw,560px)}
   .lightbox img{max-width:100%;max-height:80vh;border-radius:16px;
     box-shadow:0 0 60px rgba(141,180,255,.35), 0 0 120px rgba(226,155,255,.2)}
   .lightbox figcaption{text-align:center;font-size:13px;color:var(--ink)}
@@ -151,7 +153,6 @@
   .exportbtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);
     border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;cursor:pointer}
   .exportbtn:hover{border-color:var(--tera2)}
-  .grouphead{cursor:pointer;user-select:none}
   .grouphead .chev{display:inline-block;width:18px;color:var(--tera2)}
   .grouphead.folded{opacity:.75}
   .grouphead:hover h2{color:var(--tera2)}
@@ -187,8 +188,7 @@
 <header>
   <a class="backlink" href="index.html">← All sets</a>
   <div class="eyebrow" id="eyebrowText">Pokémon TCG</div>
-  <img class="setlogo" id="setLogo" alt=""
-       onerror="const a=(this.dataset.alts||'').split('|').filter(Boolean); if(a.length){this.dataset.alts=a.slice(1).join('|');this.src=a[0];}else{this.style.display='none';document.getElementById('titleFallback').style.display='block'}">
+  <img class="setlogo" id="setLogo" alt="">
   <h1 id="titleFallback" style="display:none"><span id="fallbackName" class="tera">Set</span></h1>
   <div class="subtitle" id="subtitleText" style="display:none"></div>
 </header>
@@ -226,9 +226,9 @@
 </section>
 
 <div class="controls" id="controls">
-  <input type="search" id="q" placeholder="Search card, number, stamp…">
-  <select id="groupSel"><option value="">All groups</option></select>
-  <select id="sortSel" title="Sort cards">
+  <input type="search" id="q" aria-label="Search cards" placeholder="Search card, number, stamp…">
+  <select id="groupSel" aria-label="Filter by group"><option value="">All groups</option></select>
+  <select id="sortSel" title="Sort cards" aria-label="Sort cards">
     <option value="">Sheet order</option>
     <option value="name">Name A–Z</option>
     <option value="price-desc">Price high → low</option>
@@ -260,13 +260,13 @@
   placeholder. Prices are read from the sheet's NM Price column.
 </footer>
 
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Card image viewer">
+<dialog class="lightbox" id="lightbox" aria-label="Card image viewer">
   <button class="lb-close" aria-label="Close">✕</button>
   <figure>
     <img id="lbImg" alt="">
     <figcaption><span id="lbName"></span><span class="lb-num" id="lbNum"></span><span class="lb-var" id="lbVar"></span></figcaption>
   </figure>
-</div>
+</dialog>
 
 <script>
 // ---- per-set config lives in sets.js -------------------------------
@@ -290,6 +290,11 @@ document.title = cfg.name + " — Pokemon Card Tracker";
   const el=document.getElementById('setLogo');
   el.dataset.alts=logoCands.slice(1).join("|");
   el.src=logoCands[0]||"";
+  el.addEventListener('error', function(){
+    const alts=(this.dataset.alts||'').split('|').filter(Boolean);
+    if(alts.length){ this.dataset.alts=alts.slice(1).join('|'); this.src=alts[0]; }
+    else{ this.style.display='none'; document.getElementById('titleFallback').style.display='block'; }
+  });
 }
 document.getElementById('setLogo').alt = cfg.name;
 document.getElementById('eyebrowText').textContent =
@@ -355,15 +360,12 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   }
 });
 
-document.getElementById('file').addEventListener('change',e=>{
+document.getElementById('file').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    parseWorkbook(XLSX.read(new Uint8Array(ev.target.result),{type:'array'}));
-    document.getElementById('notice').style.display='none';
-    markSynced();
-  };
-  r.readAsArrayBuffer(f);
+  const buf=await f.arrayBuffer();
+  parseWorkbook(XLSX.read(new Uint8Array(buf),{type:'array'}));
+  document.getElementById('notice').style.display='none';
+  markSynced();
 });
 
 function parseWorkbook(wb){
@@ -455,7 +457,7 @@ function toast(msg){
 function changeQty(it,delta,cardDiv){
   const pin=getPin();
   if(pin===null){ toast('Editing needs the PIN'); return; }
-  const prev=it.qty|0;
+  const prev=Math.trunc(it.qty);
   it.qty=Math.max(0,prev+delta);
   // update this card in place (optimistic)
   const span=cardDiv.querySelector('[data-qty] span');
@@ -587,11 +589,12 @@ function openLightbox(it,shownSrc){
   const hires=shownSrc.replace(/(\.png)$/i,'_hires$1');
   lbImg.onerror=()=>{ lbImg.onerror=null; lbImg.src=shownSrc; };
   lbImg.src=(hires!==shownSrc && /images\.pokemontcg\.io/.test(shownSrc)) ? hires : shownSrc;
-  lb.classList.add('open');
+  if(!lb.open) lb.showModal();  // showModal() throws if already open (arrow-key stepping reuses an open dialog)
   document.body.style.overflow='hidden';
 }
 function closeLightbox(){
-  lb.classList.remove('open'); lbImg.src=''; document.body.style.overflow='';
+  if(lb.open) lb.close();
+  lbImg.src=''; document.body.style.overflow='';
 }
 lb.addEventListener('click',closeLightbox);
 lb.querySelector('.lb-close').addEventListener('click',closeLightbox);
@@ -609,8 +612,10 @@ function openLightboxKeepList(it,src){
 }
 document.addEventListener('keydown',e=>{
   const typing=/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName);
-  if(lb.classList.contains('open')){
-    if(e.key==='Escape') closeLightbox();
+  if(lb.open){
+    // preventDefault so the dialog's own native Escape-to-cancel behavior
+    // doesn't also fire alongside closeLightbox()'s own cleanup
+    if(e.key==='Escape'){ e.preventDefault(); closeLightbox(); }
     else if(e.key==='ArrowRight'){ e.preventDefault(); lbStep(1); }
     else if(e.key==='ArrowLeft'){ e.preventDefault(); lbStep(-1); }
     return;

@@ -22,6 +22,7 @@ The tracker will now check:
   3. pokemontcg.io (fallback)
 """
 
+import re
 import sys
 import csv
 import urllib.request
@@ -35,10 +36,16 @@ if len(sys.argv) < 2:
 
 csv_file = Path(sys.argv[1])
 set_id = sys.argv[2] if len(sys.argv) > 2 else ""
+# validate before it ever reaches a path join: a set id with a path
+# separator or ".." would otherwise let img_dir escape img/ entirely
+if set_id and not re.fullmatch(r"[\w.\-]+", set_id):
+    print(f"✗ Invalid set id {set_id!r} — use letters, digits, dots and hyphens only "
+          "(matches the sets.js key convention), no path separators.")
+    sys.exit(1)
 if not set_id:
     print("\u26a0 No set id given \u2014 using img/ directly. For the multi-set site, pass the")
     print("  sets.js key, e.g.:  python3 download_images.py sheet.csv stellar-crown\n")
-if not csv_file.exists():
+if not csv_file.exists() or not csv_file.is_file():
     print(f"✗ File not found: {csv_file}")
     sys.exit(1)
 
@@ -158,7 +165,7 @@ for i, (key, (card, num, variant, url, filename)) in enumerate(urls_to_dl.items(
             filepath.unlink()
 
 # Write manifest
-print(f"\n[3/3] Creating manifest...")
+print("\n[3/3] Creating manifest...")
 mapfile = img_dir / "manifest.txt"
 with open(mapfile, 'w') as f:
     written = 0
@@ -170,13 +177,13 @@ with open(mapfile, 'w') as f:
 print(f"✓ Wrote {written} entries to {mapfile}")
 
 # Summary
-print(f"\n✅ Done!")
+print("\n✅ Done!")
 print(f"  Downloaded: {len(urls_to_dl)-len(failed)}/{len(urls_to_dl)} images")
 if failed:
     print(f"  Failed: {len(failed)}")
     for fn, _ in failed:
         print(f"    - {fn}")
-print(f"\n📁 Next steps:")
+print("\n📁 Next steps:")
 print(f"  1. Commit the {img_dir}/ folder to your repo")
-print(f"  2. Push to GitHub")
-print(f"  3. Your tracker will now load images from img/ first")
+print("  2. Push to GitHub")
+print("  3. Your tracker will now load images from img/ first")

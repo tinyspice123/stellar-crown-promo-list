@@ -26,7 +26,7 @@ function readQuotedCsvField(text, start){
 }
 
 function csvToRows(text){
-  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
+  if(text.codePointAt(0)===0xFEFF) text=text.slice(1);
   const rows=[]; let row=[], field="";
   const endField=()=>{ row.push(field); field=""; };
   const endRow=()=>{ endField(); rows.push(row); row=[]; };
@@ -52,11 +52,11 @@ function priceMid(p){
 
 // The Have column takes a bare quantity ("3"), a truthy marker (TRUE/x/yes),
 // or a "not owned" marker (blank/false/no/n/-/–/0). Returns the quantity.
-const HAVE_NO_VALUES=["false","no","n","-","–","0"];
+const HAVE_NO_VALUES=new Set(["false","no","n","-","–","0"]);
 function parseHaveQty(haveRaw){
   const have=String(haveRaw||"").trim().toLowerCase();
-  if(/^\d+$/.test(have)) return parseInt(have,10);
-  if(have && !HAVE_NO_VALUES.includes(have)) return 1;
+  if(/^\d+$/.test(have)) return Number.parseInt(have,10);
+  if(have && !HAVE_NO_VALUES.has(have)) return 1;
   return 0;
 }
 
@@ -114,13 +114,13 @@ function imgCandidatesPure(it, cfg, setId, imgMap){
   const m=it.num.match(/^(\d+)\s*\//);   // any NNN/MMM number
   const p=it.num.match(/^SVP\s*(\d+)/i);
   if(m){
-    const n=parseInt(m[1],10), n3=String(n).padStart(3,"0");
+    const n=Number.parseInt(m[1],10), n3=String(n).padStart(3,"0");
     if(cfg.imgTemplate) out.push(cfg.imgTemplate.replace("{num3}",n3).replace("{num}",String(n)));
     if(cfg.tcgSet) out.push(`https://images.pokemontcg.io/${cfg.tcgSet}/${n}.png`);
     const dex=tcgdexBaseFor(cfg);
     if(dex){ out.push(`${dex}/${n3}/high.webp`, `${dex}/${n}/high.webp`); }
   }
-  if(p) out.push(`https://images.pokemontcg.io/${cfg.promoSet||"svp"}/${parseInt(p[1],10)}.png`);
+  if(p) out.push(`https://images.pokemontcg.io/${cfg.promoSet||"svp"}/${Number.parseInt(p[1],10)}.png`);
   return out;
 }
 
@@ -168,7 +168,7 @@ function exportText(setName, kind, list){
 // a quote, comma or newline; double any embedded quotes.
 function csvEscape(v){
   const s=String(v);
-  return /["\n,]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  return /["\n,]/.test(s) ? '"'+s.replaceAll('"','""')+'"' : s;
 }
 
 // CSV export; owned exports gain a Have column with quantities.

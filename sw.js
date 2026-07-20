@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   // images & logos: cache-first
-  if (url.pathname.match(/\.(png|jpg|jpeg|webp|svg)$/) ) {
+  if (/\.(png|jpg|jpeg|webp|svg)$/.exec(url.pathname)) {
     e.respondWith(
       caches.match(e.request).then(hit => hit ||
         fetch(e.request).then(res => {

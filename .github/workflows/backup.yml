@@ -12,10 +12,12 @@ on:
   workflow_dispatch:         # and on demand from the Actions tab
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   backup:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
