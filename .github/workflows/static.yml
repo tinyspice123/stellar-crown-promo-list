@@ -82,29 +82,33 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
+      - name: Setup Node
+        uses: actions/setup-node@v7
         with:
-          name: javascript-coverage
-          path: coverage
+          node-version: 24
+
+      - name: Install coverage tool
+        run: npm install --no-save c8
+
+      - name: Generate JavaScript coverage
+        run: npx c8 --reporter=lcov node tests/lib.test.mjs
+
+      - name: Check coverage file exists
+        run: ls -la coverage
 
       - name: Analyze with SonarQube
         uses: SonarSource/sonarqube-scan-action@v8.2.1
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
         with:
           args: >
             -Dsonar.projectKey=tinyspice123_ultimate_pokemon_card_tracker
             -Dsonar.organization=tinyspice123
-            -Dsonar.scm.provider=git
             -Dsonar.sources=apps-script,scripts
-            -Dsonar.exclusions=img/**,assets/**
+            -Dsonar.python.file.suffixes=.py
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-
 
   deploy:
     name: Deploy to GitHub Pages
