@@ -10,7 +10,8 @@ import { createRequire } from 'node:module';
 // SonarQube cannot match to the repository file.
 const require = createRequire(import.meta.url);
 const {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
-       esc, sortItems, exportText, exportCsv, csvEscape} = require('../lib.js');
+       esc, safeImageUrl, setSafeImageSource, sortItems, exportText, exportCsv,
+       csvEscape} = require('../lib.js');
 
 test('csvToRows: simple rows', () => {
   assert.deepStrictEqual(csvToRows('a,b\n1,2'), [['a','b'],['1','2']]);
@@ -105,6 +106,19 @@ test('esc: escapes all five HTML-sensitive chars', () => {
 });
 test('esc: plain text passes through', () => {
   assert.equal(esc('Pikachu 025/191'), 'Pikachu 025/191');
+});
+
+test('safeImageUrl permits images without permitting executable URLs', () => {
+  const base='https://tracker.test/path/index.html';
+  assert.equal(safeImageUrl('img/card.png',base),'https://tracker.test/path/img/card.png');
+  assert.equal(safeImageUrl('https://images.example/card.png',base),'https://images.example/card.png');
+  assert.equal(safeImageUrl('javascript:alert(1)',base),'');
+  assert.equal(safeImageUrl('data:text/html,<script>alert(1)</script>',base),'');
+  assert.equal(safeImageUrl('http://images.example/card.png',base),'');
+  const image={};
+  assert.equal(setSafeImageSource(image,'/card.png',base),true);
+  assert.equal(image.src,'https://tracker.test/card.png');
+  assert.equal(setSafeImageSource(image,'javascript:alert(1)',base),false);
 });
 
 test('sortItems', async (t) => {

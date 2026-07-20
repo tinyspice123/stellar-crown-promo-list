@@ -53,21 +53,23 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   if(cfg.tcgSet) logoCands.push('https://images.pokemontcg.io/'+cfg.tcgSet+'/logo.png');
   const sm=(cfg.tcgdexSet||'').match(/^[a-z]+/i);
   if(sm) logoCands.push('https://assets.tcgdex.net/en/'+sm[0].toLowerCase()+'/'+cfg.tcgdexSet+'/logo.png');
-  const logo=logoCands[0]||'';
   a.innerHTML=`
-    <img src="${esc(logo)}" alt="${esc(cfg.name)}"
+    <img alt="${esc(cfg.name)}"
       data-alts="${esc(logoCands.slice(1).join('|'))}">
     <div class="meta"><span class="code">${esc(cfg.tcgSet||cfg.code||"")}</span><span class="prog" data-prog>…</span></div>
     <div class="bar"><i data-bar></i></div>`;
-  a.querySelector('img').addEventListener('error',function(){
+  const logoImg=a.querySelector('img');
+  logoImg.addEventListener('error',function(){
     const alternatives=(this.dataset.alts||'').split('|').filter(Boolean);
     if(alternatives.length){
-      this.dataset.alts=alternatives.slice(1).join('|'); this.src=alternatives[0];
+      this.dataset.alts=alternatives.slice(1).join('|');
+      if(!setSafeImageSource(this,alternatives[0],document.baseURI)) this.dispatchEvent(new Event('error'));
     }else{
       this.replaceWith(Object.assign(document.createElement('div'),
         {className:'noimg',textContent:cfg.name}));
     }
   });
+  setSafeImageSource(logoImg,logoCands[0]||'',document.baseURI);
   a.dataset.search=(id+" "+cfg.name+" "+(cfg.tcgSet||"")+" "+(cfg.code||"")+" "+(cfg.tcgdexSet||"")).toLowerCase();
   main.appendChild(a);
   if(!cfg.sheet){

@@ -15,10 +15,13 @@ document.title = cfg.name + " — Pokemon Card Tracker";
   if(s) logoCands.push(`https://assets.tcgdex.net/en/${s[0].toLowerCase()}/${cfg.tcgdexSet}/logo.png`);
   const el=document.getElementById('setLogo');
   el.dataset.alts=logoCands.slice(1).join("|");
-  el.src=logoCands[0]||"";
+  setSafeImageSource(el,logoCands[0]||"",document.baseURI);
   el.addEventListener('error', function(){
     const alts=(this.dataset.alts||'').split('|').filter(Boolean);
-    if(alts.length){ this.dataset.alts=alts.slice(1).join('|'); this.src=alts[0]; }
+    if(alts.length){
+      this.dataset.alts=alts.slice(1).join('|');
+      if(!setSafeImageSource(this,alts[0],document.baseURI)) this.dispatchEvent(new Event('error'));
+    }
     else{ this.style.display='none'; document.getElementById('titleFallback').style.display='block'; }
   });
 }
@@ -212,7 +215,7 @@ function loadDeferredImage(img){
   const src=img.dataset.src;
   if(!src) return;
   delete img.dataset.src;
-  img.src=src;
+  if(!setSafeImageSource(img,src,document.baseURI)) __imgFallback(img);
 }
 function observeLazyImages(root){
   if(imageObserver) imageObserver.disconnect();
@@ -235,7 +238,7 @@ function __imgFallback(img){
   const alts=(img.dataset.alts||"").split("|").filter(Boolean);
   if(alts.length){
     img.dataset.alts=alts.slice(1).join("|");
-    img.src=alts[0];
+    if(!setSafeImageSource(img,alts[0],document.baseURI)) __imgFallback(img);
     return;
   }
   img.replaceWith(Object.assign(document.createElement('div'),
@@ -252,7 +255,7 @@ function cardEl(it){
   const qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
   d.innerHTML=`
     <div class="imgwrap${/reverse\s*holo/i.test(it.variant)?' rh':''}">
-      ${url?`<img loading="lazy" decoding="async" fetchpriority="low" alt="${esc(it.card)}" data-src="${url}"
+      ${url?`<img loading="lazy" decoding="async" fetchpriority="low" alt="${esc(it.card)}" data-src="${esc(url)}"
         data-alts="${esc(alts.join('|'))}" data-ph="${initial}">`
         :`<div class="ph"><b>${initial}</b><span>variant</span></div>`}
       ${it.price?`<span class="pricechip">${esc(it.price)}</span>`:''}
@@ -305,8 +308,13 @@ function openLightbox(it,shownSrc){
   lbImg.alt=it.card;
   // try the high-res scan first, fall back to the already-loaded image
   const hires=shownSrc.replace(/(\.png)$/i,'_hires$1');
-  lbImg.onerror=()=>{ lbImg.onerror=null; lbImg.src=shownSrc; };
-  lbImg.src=(hires!==shownSrc && /images\.pokemontcg\.io/.test(shownSrc)) ? hires : shownSrc;
+  lbImg.onerror=()=>{
+    lbImg.onerror=null;
+    setSafeImageSource(lbImg,shownSrc,document.baseURI);
+  };
+  setSafeImageSource(lbImg,
+    (hires!==shownSrc && /images\.pokemontcg\.io/.test(shownSrc)) ? hires : shownSrc,
+    document.baseURI);
   if(!lb.open) lb.showModal();  // showModal() throws if already open (arrow-key stepping reuses an open dialog)
   document.body.style.overflow='hidden';
 }

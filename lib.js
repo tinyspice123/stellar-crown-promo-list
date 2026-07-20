@@ -129,6 +129,27 @@ function esc(s){
   return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// Resolve an image candidate while rejecting executable/data URL schemes.
+// HTTPS is allowed externally; plain HTTP is allowed only for same-origin
+// local development. CSP applies the narrower production host allowlist.
+function safeImageUrl(candidate, baseUrl){
+  try{
+    const base=new URL(baseUrl);
+    const url=new URL(String(candidate),base);
+    if(url.protocol==='https:' || (url.protocol==='http:' && url.origin===base.origin)){
+      return url.href;
+    }
+  }catch{ /* malformed URLs are rejected below */ }
+  return '';
+}
+
+function setSafeImageSource(image,candidate,baseUrl){
+  const safe=safeImageUrl(candidate,baseUrl);
+  if(!safe) return false;
+  image.src=safe;
+  return true;
+}
+
 // Sort a list of items by mode: "" = sheet order (returns the list as-is),
 // "name" = card name then numeric-aware number, "price-asc"/"price-desc" =
 // by priceMid with unpriced cards always sinking to the bottom.
@@ -184,6 +205,6 @@ function exportCsv(kind, list){
 if(typeof module!=="undefined" && module.exports){
   module.exports={
     csvToRows,priceMid,parseHaveQty,detectColumns,rowsToItems,imgCandidatesPure,
-    esc,sortItems,exportText,exportCsv,csvEscape
+    esc,safeImageUrl,setSafeImageSource,sortItems,exportText,exportCsv,csvEscape
   };
 }
