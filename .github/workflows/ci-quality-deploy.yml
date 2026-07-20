@@ -123,6 +123,8 @@ jobs:
             -Dsonar.python.file.suffixes=.py
             -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
 
   deploy:
     name: Deploy to GitHub Pages

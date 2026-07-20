@@ -130,7 +130,8 @@ Both pages also enforce a Content Security Policy. Scripts and styles live in lo
 - **Site checks** (`tests/ci_checks.mjs`, zero dependencies): sets.js parses and uses kebab-case, non-numeric ids; sheet links are CSV publish links with no leftover `PASTE_TAB_GID` or shared gids; local JavaScript is syntactically valid; inline code is rejected; and the service worker precaches every local script and stylesheet the pages load
 - **JavaScript behavioral tests** (`tests/lib.test.mjs`, `tests/sw.test.mjs`): tracker data logic and service-worker caching/offline behavior
 - **Python tests** (`tests/`): `download_images.py`'s header auto-detection, manifest format, and duplicate/failed-download handling; `sets_js.py`'s entry/field parsing and comment-stripping — the one shared parser `download_assets.py`, `backup_sheets.py`, and `check_logos.py` all depend on
-- **Deploy** publishes only the runtime site files to GitHub Pages **only if all test jobs pass** (skipped on PRs), so tests, scripts, backups, and development configuration are not included in the public artifact
+- **Quality Gate** makes the scanner wait for SonarCloud's server-side result; a failed gate fails the analysis job
+- **Deploy** publishes only the runtime site files to GitHub Pages **only if tests and the SonarCloud Quality Gate pass** (skipped on PRs), so tests, scripts, backups, and development configuration are not included in the public artifact
 
 `.github/workflows/backup.yml` also runs `check_logos.py` weekly alongside the sheet backup — it isn't in the deploy pipeline because it depends on third-party CDNs and shouldn't be able to block (or flake out) a deploy.
 

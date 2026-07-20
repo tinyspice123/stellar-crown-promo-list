@@ -44,6 +44,13 @@ for (const [id, gid] of gids) {
 }
 if (gids.length && Object.keys(seen).length === gids.length) ok('sheet gids are unique');
 
+// A successful scan upload is not the same as a passing server-side gate.
+// Keep deployment blocked until SonarCloud has computed and passed the gate.
+const workflow = fs.readFileSync('.github/workflows/ci-quality-deploy.yml', 'utf8');
+if (!workflow.includes('-Dsonar.qualitygate.wait=true'))
+  fail('SonarQube analysis does not wait for the Quality Gate');
+else ok('SonarQube Quality Gate blocks the analysis job');
+
 // ---------- HTML pages ----------
 for (const file of ['index.html', 'tracker.html']) {
   console.log(file);
