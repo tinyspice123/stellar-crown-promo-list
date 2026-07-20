@@ -37,6 +37,12 @@ jobs:
       - name: lib.js unit tests with coverage
         run: npx c8 --reporter=lcov node tests/lib.test.mjs
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: javascript-coverage
+          path: coverage/lcov.info
+
       - name: Check coverage output
         run: ls -la coverage
 
@@ -76,17 +82,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Recreate coverage because jobs do not share files
-      - name: Setup Node
-        uses: actions/setup-node@v7
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
         with:
-          node-version: 24
-
-      - name: Install coverage tool
-        run: npm install --no-save c8
-
-      - name: Generate JavaScript coverage
-        run: npx c8 --reporter=lcov node tests/lib.test.mjs
+          name: javascript-coverage
+          path: coverage
 
       - name: Analyze with SonarQube
         uses: SonarSource/sonarqube-scan-action@v8.2.1
