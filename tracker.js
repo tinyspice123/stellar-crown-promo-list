@@ -98,7 +98,7 @@ async function loadImgManifest(){
       if(!line.trim()) return;
       const parts=line.split('|');
       if(parts.length>=4){ // card|number|variant|filename
-        const file=parts[parts.length-1];
+        const file=parts.at(-1);
         imgMap.set(parts.slice(0,-1).join('|'), file);
       }
     });
@@ -340,7 +340,7 @@ function lbStep(dir){
   lbIndex=(lbIndex+dir+lbList.length)%lbList.length;
   const im=lbList[lbIndex];
   const card=im.closest('.item');
-  if(card && card.__item) openLightboxKeepList(card.__item, im.src);
+  if(card?.__item) openLightboxKeepList(card.__item, im.src);
 }
 function openLightboxKeepList(it,src){
   const keepL=lbList, keepI=lbIndex;
