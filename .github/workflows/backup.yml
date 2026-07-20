@@ -1,6 +1,9 @@
 # Collection history: snapshots every set's sheet into backups/ weekly.
 # Git history makes each snapshot diffable — you can see exactly which
 # cards were added between any two weeks, and restore any past state.
+# Also runs a weekly logo-reachability check here rather than in the
+# deploy pipeline, since both are external-network checks that shouldn't
+# gate (or flake out) a deploy.
 name: Backup collection sheets
 
 on:
@@ -32,3 +35,14 @@ jobs:
             git commit -m "Weekly collection backup [skip ci]"
             git push
           fi
+
+  check-logos:
+    name: Set logo reachability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.14"
+      - name: Check every set's logo resolves
+        run: python check_logos.py

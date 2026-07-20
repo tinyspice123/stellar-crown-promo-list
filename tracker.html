@@ -6,6 +6,7 @@
 <title>Stellar Crown — Collection Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="sets.js"></script>
+<script src="lib.js"></script>
 <style>
   :root{
     --night:#100e22; --panel:#1a1733; --panel2:#221e42; --line:#332e5c;
@@ -66,6 +67,7 @@
   .stat b{font-family:"Unbounded",sans-serif;font-size:17px;display:block}
   .stat span{font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
   .stat.miss b{color:var(--miss)} .stat.own b{color:var(--good)}
+  .synced{grid-column:1/-1;font-size:11px;color:var(--faint)}
 
   .controls{
     max-width:1180px;margin:20px auto 0;padding:0 20px;display:none;gap:10px;flex-wrap:wrap;align-items:center;
@@ -220,6 +222,7 @@
     <div class="stat own"><b id="sValOwn">£0</b><span>est. value owned</span></div>
     <div class="stat miss"><b id="sValMiss">£0</b><span>est. cost of gaps</span></div>
   </div>
+  <div class="synced" id="syncedInfo"></div>
 </section>
 
 <div class="controls" id="controls">
@@ -302,6 +305,22 @@ let items=[];
 document.getElementById('fnameCode').textContent = SHEET_URL ? "your Google Sheet" : FILE;
 document.getElementById('fnameFoot').textContent = SHEET_URL ? "your Google Sheet" : FILE;
 
+// ---- "synced Xs ago" — so a reload's staleness (Google's ~5 min publish
+// cache) is visible instead of silently trusted ----
+let lastSyncedAt=null;
+function markSynced(){ lastSyncedAt=Date.now(); updateSyncedLabel(); }
+function updateSyncedLabel(){
+  const el=document.getElementById('syncedInfo');
+  if(!lastSyncedAt){ el.textContent=''; return; }
+  const s=Math.round((Date.now()-lastSyncedAt)/1000);
+  const txt = s<10 ? 'Synced just now'
+    : s<60 ? `Synced ${s}s ago`
+    : s<3600 ? `Synced ${Math.round(s/60)}m ago`
+    : `Synced ${Math.round(s/3600)}h ago`;
+  el.textContent=txt;
+}
+setInterval(updateSyncedLabel, 15000);
+
 window.addEventListener('DOMContentLoaded', async ()=>{
   await loadImgManifest();
   if(!SHEET_URL && !FILE){
@@ -319,11 +338,13 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       const text = await res.text();
       if(/^\s*</.test(text)) throw new Error("Got a web page, not CSV — use the Publish-to-web CSV link or /export?format=csv");
       parseRows(csvToRows(text));
+      markSynced();
     }else{
       const res = await fetch(FILE + "?t=" + Date.now(), {cache:"no-store"});
       if(!res.ok) throw new Error(res.status);
       const buf = await res.arrayBuffer();
       parseWorkbook(XLSX.read(new Uint8Array(buf), {type:'array'}));
+      markSynced();
     }
   }catch(e){
     const n=document.getElementById('notice');
@@ -333,34 +354,13 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   }
 });
 
-function csvToRows(text){
-  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
-  const rows=[]; let row=[], field="", inQ=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(inQ){
-      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; }
-      else field+=c;
-    }else{
-      if(c==='"') inQ=true;
-      else if(c===','){ row.push(field); field=""; }
-      else if(c==='\n'||c==='\r'){
-        if(c==='\r'&&text[i+1]==='\n') i++;
-        row.push(field); rows.push(row); row=[]; field="";
-      }
-      else field+=c;
-    }
-  }
-  if(field!==""||row.length){ row.push(field); rows.push(row); }
-  return rows;
-}
-
 document.getElementById('file').addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=ev=>{
     parseWorkbook(XLSX.read(new Uint8Array(ev.target.result),{type:'array'}));
     document.getElementById('notice').style.display='none';
+    markSynced();
   };
   r.readAsArrayBuffer(f);
 });
@@ -371,28 +371,7 @@ function parseWorkbook(wb){
 }
 
 function parseRows(rows){
-  // find columns by header name so you can remove/reorder columns freely
-  const hdr=(rows[0]||[]).map(h=>String(h).toLowerCase());
-  const col=name=>hdr.findIndex(h=>h.includes(name));
-  const cGroup=Math.max(col("group"),0), cCard=col("card")>-1?col("card"):1,
-        cNum=col("number"), cVar=col("variant"), cSrc=col("source"),
-        cPrice=col("price"), cStatus=col("status"), cHave=col("have"),
-        cImg=col("image");
-  const get=(r,c)=>c>-1?String(r[c]||"").trim():"";
-  items=[]; let group="Ungrouped";
-  for(let i=1;i<rows.length;i++){
-    const r=rows[i];
-    const g=get(r,cGroup), card=get(r,cCard);
-    if(g && !card){ group=g; continue; }
-    if(!card) continue;
-    const have=get(r,cHave).toLowerCase();
-    let qty=0;
-    if(/^\d+$/.test(have)) qty=parseInt(have,10);
-    else if(have && !["false","no","n","-","–","0"].includes(have)) qty=1;
-    items.push({group, card, num:get(r,cNum), variant:get(r,cVar),
-      src:get(r,cSrc), price:get(r,cPrice), status:get(r,cStatus), qty,
-      img:get(r,cImg)});
-  }
+  items=rowsToItems(rows);
   buildGroupSel(); render();
   document.getElementById('stats').style.display='grid';
   document.getElementById('controls').style.display='flex';
@@ -408,11 +387,6 @@ function parseRows(rows){
   foot.style.display='block';
 }
 
-function priceMid(p){
-  const nums=(p.match(/\d+(?:\.\d+)?/g)||[]).map(Number);
-  if(!nums.length) return null;
-  return nums.length>1 ? (nums[0]+nums[1])/2 : nums[0];
-}
 // ---- img folder manifest (downloaded copies of sheet Image URLs)
 let imgMap = new Map(); // "card|number|variant" -> filename in img/
 async function loadImgManifest(){
@@ -430,33 +404,7 @@ async function loadImgManifest(){
   }catch(e){}
 }
 
-function tcgdexBase(){
-  // serie is the leading letters of the set id: me03 -> me, sv03.5 -> sv
-  const s=(cfg.tcgdexSet||"").match(/^[a-z]+/i);
-  return s ? `https://assets.tcgdex.net/en/${s[0].toLowerCase()}/${cfg.tcgdexSet}` : null;
-}
-function imgCandidates(it){
-  const out=[];
-  // 1) Image column in the sheet is the source of truth
-  if(it.img && /^https?:\/\//i.test(it.img)) out.push(it.img);
-  // 2) downloaded copy in the repo's img/ folder (via img/manifest.txt)
-  const localFile = imgMap.get(`${it.card}|${it.num}|${it.variant}`);
-  if(localFile) out.push("img/"+SET_ID+"/"+localFile);
-  const m=it.num.match(/^(\d+)\s*\//);   // any NNN/MMM number
-  const p=it.num.match(/^SVP\s*(\d+)/i);
-  if(m){
-    const n=parseInt(m[1],10), n3=String(n).padStart(3,"0");
-    // 3) custom template
-    if(cfg.imgTemplate) out.push(cfg.imgTemplate.replace("{num3}",n3).replace("{num}",String(n)));
-    // 4) pokemontcg.io (covers sets up to ~2025)
-    if(cfg.tcgSet) out.push(`https://images.pokemontcg.io/${cfg.tcgSet}/${n}.png`);
-    // 5) TCGdex (covers newer sets incl. the Mega era) — try both id paddings
-    const dex=tcgdexBase();
-    if(dex){ out.push(`${dex}/${n3}/high.webp`, `${dex}/${n}/high.webp`); }
-  }
-  if(p) out.push(`https://images.pokemontcg.io/${cfg.promoSet||"svp"}/${parseInt(p[1],10)}.png`);
-  return out;
-}
+function imgCandidates(it){ return imgCandidatesPure(it, cfg, SET_ID, imgMap); }
 function imgUrl(it){ return imgCandidates(it)[0] || null; }
 
 function buildGroupSel(){
@@ -567,9 +515,14 @@ function render(){
     const own=list.filter(i=>i.qty>0).length;
     const folded=collapsed.has(g);
     const gh=document.createElement('div'); gh.className='grouphead'+(folded?' folded':'');
+    gh.setAttribute('role','button'); gh.setAttribute('tabindex','0');
+    gh.setAttribute('aria-expanded', String(!folded));
     gh.innerHTML=`<h2><span class="chev">${folded?'\u25b8':'\u25be'}</span>${esc(g)}</h2>
       <span class="count">${own}/${list.length} owned</span>`;
     gh.addEventListener('click',()=>{ toggleGroup(g); });
+    gh.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleGroup(g); }
+    });
     main.appendChild(gh);
     if(folded) return;
     const grid=document.createElement('div'); grid.className='grid';
@@ -736,7 +689,8 @@ function doExport(kind,act){
     const blob=new Blob([exportCsv(kind,list)],{type:'text/csv'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download=`${SET_ID}-${kind}.csv`;
+    const today=new Date().toISOString().slice(0,10); // YYYY-MM-DD, sortable in a file listing
+    a.download=`${SET_ID}-${kind}-${today}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
     toast(`Downloaded ${list.length} ${kind} card${list.length===1?'':'s'}`);

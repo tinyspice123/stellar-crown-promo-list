@@ -128,16 +128,21 @@ Edits are optimistic (instant on screen) and confirmed against the server's resp
 
 `python3 download_assets.py` reads sets.js and saves each active set's logo to `assets/logos/<set-id>.png`, trying your custom `logo`, then pokemontcg.io, then TCGdex. Commit the folder; both pages check the local path before any API. Re-run after adding sets. Card *artwork* still comes from the APIs (mirroring thousands of card images into a repo isn't practical) — for specific cards you want pinned locally, use the Image column + `download_images.py`.
 
+`python3 check_logos.py` is the read-only counterpart: it walks the same logo/tcgSet/tcgdexSet candidate chain without downloading anything, and fails if none of a set's candidates resolve. Useful right after adding a `tcgSet`/`tcgdexSet` code you haven't verified yet (see the `// VERIFY` comments in `sets.js`) — it also runs weekly in CI (see below).
+
 ---
 
 ## CI
 
 `.github/workflows/static.yml` is a single pipeline — tests, then deploy. On every push to `main` and every PR:
-- **Site checks** (`tests/ci_checks.mjs`, zero dependencies): sets.js parses; set ids aren't purely numeric; sheet links are CSV links with no leftover `PASTE_TAB_GID`; no two sets share a gid; inline scripts in both pages are syntactically valid; no code trapped inside `<script src>` tags; required element ids exist
+- **Site checks** (`tests/ci_checks.mjs`, zero dependencies): sets.js parses; set ids aren't purely numeric and are kebab-case; sheet links are CSV links with no leftover `PASTE_TAB_GID`; no two sets share a gid; inline scripts in both pages are syntactically valid; no code trapped inside `<script src>` tags; required element ids exist
+- **`lib.js` unit tests** (`tests/lib.test.mjs`): CSV parsing edge cases, price-range averaging, Have/qty parsing, column auto-detection, the image fallback chain
 - **Python tests** (`tests/test_download_images.py`): header auto-detection, manifest format, duplicate reporting, failed-download exclusion, shared-URL handling
-- **Deploy** publishes the repo to GitHub Pages **only if both test jobs pass** (skipped on PRs), so a broken commit can't take the live site down
+- **Deploy** publishes the repo to GitHub Pages **only if all test jobs pass** (skipped on PRs), so a broken commit can't take the live site down
 
-Run locally: `node tests/ci_checks.mjs` and `python3 -m unittest discover -s tests`.
+`.github/workflows/backup.yml` also runs `check_logos.py` weekly alongside the sheet backup — it isn't in the deploy pipeline because it depends on third-party CDNs and shouldn't be able to block (or flake out) a deploy.
+
+Run locally: `node tests/ci_checks.mjs`, `node tests/lib.test.mjs`, and `python3 -m unittest discover -s tests`.
 
 ---
 
@@ -197,13 +202,16 @@ repo/
 ├── index.html              # Home page — set tiles w/ logos, search, progress
 ├── tracker.html            # Tracker template (all sets share it; never edited per set)
 ├── sets.js                 # ★ Set registry + WRITE_URL — the only file you configure
+├── lib.js                  # Shared pure logic (CSV parsing, price/qty math, image fallback chain)
 ├── template.csv            # Example sheet tab to copy for new sets
 ├── download_images.py      # Mirrors sheet Image URLs into img/<set-id>/
 ├── download_assets.py      # Mirrors set logos into assets/logos/
+├── check_logos.py          # Read-only check that every set's logo source resolves
 ├── apps-script/Code.gs     # Optional write-back endpoint (paste into Apps Script)
-├── tests/                  # CI checks (node) + unit tests (python)
+├── tests/                  # CI checks + lib.js unit tests (node) + script unit tests (python)
+├── renovate.json           # Automated dependency updates (Renovate)
 ├── .github/workflows/static.yml   # tests → deploy pipeline
-├── .github/workflows/backup.yml   # weekly sheet snapshots → backups/
+├── .github/workflows/backup.yml   # weekly sheet snapshots + logo reachability check
 ├── backup_sheets.py        # fetches all sheets into backups/ (used by the Action)
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # service worker (offline caching)

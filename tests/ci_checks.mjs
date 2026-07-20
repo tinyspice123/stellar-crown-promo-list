@@ -16,6 +16,7 @@ if (ids.length === 0) fail('no sets defined'); else ok(ids.length + ' active set
 
 for (const [id, cfg] of Object.entries(SETS)) {
   if (/^\d+$/.test(id)) fail(`key "${id}" is purely numeric - JS reorders these; rename it`);
+  if (!/^[a-z0-9-]+$/.test(id)) fail(`key "${id}" is not kebab-case (lowercase letters, digits, hyphens only) - rename it to match the other set ids`);
   if (!cfg.name) fail(`"${id}" has no name`);
   if (cfg.sheet && !/output=csv/.test(cfg.sheet)) fail(`"${id}" sheet link is not a CSV publish link`);
   if (cfg.sheet && /PASTE_TAB_GID/.test(cfg.sheet)) fail(`"${id}" still contains PASTE_TAB_GID - comment the sheet line out or paste the real gid`);
@@ -58,6 +59,14 @@ for (const file of ['index.html', 'tracker.html']) {
     if (!html.includes(`id="${id}"`)) { fail(`missing element id="${id}"`); missing = true; }
   }
   if (!missing) ok('required element ids present');
+}
+
+// ---------- lib.js ----------
+console.log('lib.js');
+try { new Function(fs.readFileSync('lib.js', 'utf8')); ok('syntax OK'); }
+catch (e) { fail('syntax error: ' + e.message); }
+for (const file of ['index.html', 'tracker.html']) {
+  if (!fs.readFileSync(file, 'utf8').includes('<script src="lib.js">')) fail(`${file} does not load lib.js`);
 }
 
 // ---------- PWA files ----------

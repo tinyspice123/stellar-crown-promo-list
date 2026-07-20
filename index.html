@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pokemon Card Tracker</title>
 <script src="sets.js"></script>
+<script src="lib.js"></script>
 <style>
   :root{
     --night:#100e22; --panel:#1a1733; --panel2:#221e42; --line:#332e5c;
@@ -79,26 +80,6 @@
 <script>
 const main=document.getElementById('sets');
 
-// tiny CSV parser (quote-aware)
-function csvToRows(text){
-  const rows=[];let row=[],cur="",inQ=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(inQ){
-      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; }
-      else cur+=c;
-    }else{
-      if(c==='"') inQ=true;
-      else if(c===','){row.push(cur);cur="";}
-      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur="";}
-      else if(c!=='\r') cur+=c;
-    }
-  }
-  if(cur!==""||row.length){row.push(cur);rows.push(row);}
-  return rows;
-}
-const OWNED_NO=new Set(["","false","no","n","-","0"]);
-
 async function progress(cfg){
   if(!cfg.sheet) return null;
   const res=await fetch(cfg.sheet,{cache:"no-store"});
@@ -120,10 +101,23 @@ async function progress(cfg){
     const card=(rows[r][ci]||"").trim();
     if(!card) continue;           // group header / blank rows
     total++;
-    const hv=(rows[r][haveI]||"").trim().toLowerCase();
-    if(!OWNED_NO.has(hv)) owned++;
+    if(parseHaveQty(rows[r][haveI])>0) owned++;
   }
   return {owned,total};
+}
+
+// ---- cache last-seen progress per set so returning visitors see numbers
+// instantly instead of a "…" flash while every set's sheet re-fetches ----
+function getCachedProgress(id){
+  try{ return JSON.parse(localStorage.getItem('progress:'+id)||'null'); }catch(e){ return null; }
+}
+function setCachedProgress(id,p){
+  try{ localStorage.setItem('progress:'+id, JSON.stringify(p)); }catch(e){}
+}
+function paintProgress(a,p){
+  const t=a.querySelector('[data-prog]'), b=a.querySelector('[data-bar]');
+  t.textContent=`${p.owned} / ${p.total} owned`;
+  b.style.width=(p.total? (100*p.owned/p.total):0)+'%';
 }
 
 Object.entries(SETS).forEach(([id,cfg])=>{
@@ -146,13 +140,15 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   main.appendChild(a);
   if(!cfg.sheet){
     a.querySelector('[data-prog]').textContent='not set up yet';
-  } else
-  progress(cfg).then(p=>{
-    const t=a.querySelector('[data-prog]'), b=a.querySelector('[data-bar]');
-    if(!p){ t.textContent=''; return; }
-    t.textContent=`${p.owned} / ${p.total} owned`;
-    b.style.width=(p.total? (100*p.owned/p.total):0)+'%';
-  }).catch(()=>{ a.querySelector('[data-prog]').textContent=''; });
+  } else {
+    const cached=getCachedProgress(id);
+    if(cached) paintProgress(a,cached);
+    progress(cfg).then(p=>{
+      if(!p) return; // keep showing the cached value (or "…") rather than blanking
+      paintProgress(a,p);
+      setCachedProgress(id,p);
+    }).catch(()=>{ if(!cached) a.querySelector('[data-prog]').textContent=''; });
+  }
 });
 
 document.getElementById('setSearch').addEventListener('input', e=>{

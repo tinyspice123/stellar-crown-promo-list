@@ -28,6 +28,8 @@ jobs:
           node-version: 24
       - name: Zero-dependency site checks
         run: node tests/ci_checks.mjs
+      - name: lib.js unit tests
+        run: node tests/lib.test.mjs
 
   python-tests:
     name: Python tests (scripts)
@@ -38,7 +40,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Byte-compile scripts
-        run: python -m py_compile download_images.py download_assets.py backup_sheets.py
+        run: python -m py_compile download_images.py download_assets.py backup_sheets.py check_logos.py
       - name: Unit tests
         run: python -m unittest discover -s tests -v
 

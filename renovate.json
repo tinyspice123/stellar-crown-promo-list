@@ -11,5 +11,19 @@
       ],
       "groupName": "GitHub Actions updates"
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "SheetJS (xlsx) version pinned in the cdnjs <script> tag in tracker.html - not seen by any default manager since it's a raw URL, not a package.json/lockfile",
+      "managerFilePatterns": [
+        "/^tracker\\.html$/"
+      ],
+      "matchStrings": [
+        "cdnjs\\.cloudflare\\.com/ajax/libs/xlsx/(?<currentValue>[^/\"]+)/xlsx\\.full\\.min\\.js"
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "xlsx"
+    }
   ]
 }
