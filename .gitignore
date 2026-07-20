@@ -3,6 +3,8 @@ node_modules/
 coverage/
 coverage.xml
 .coverage
+test-results/
+playwright-report/
 
 # Python bytecode
 __pycache__/

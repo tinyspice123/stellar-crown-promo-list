@@ -2,9 +2,11 @@
   "name": "ultimate-pokemon-card-tracker",
   "private": true,
   "scripts": {
-    "test:coverage": "c8 --reporter=lcov node --test tests/lib.test.mjs tests/sw.test.mjs"
+    "test:coverage": "c8 --reporter=lcov node --test tests/lib.test.mjs tests/sw.test.mjs",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "c8": "12.0.0"
   }
 }

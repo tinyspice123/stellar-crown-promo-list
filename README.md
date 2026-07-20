@@ -129,6 +129,7 @@ Both pages also enforce a Content Security Policy. Scripts and styles live in lo
 `.github/workflows/ci-quality-deploy.yml` is a single pipeline — tests, quality/security analysis, then deploy. On every push to `main` and every PR:
 - **Site checks** (`tests/ci_checks.mjs`, zero dependencies): sets.js parses and uses kebab-case, non-numeric ids; sheet links are CSV publish links with no leftover `PASTE_TAB_GID` or shared gids; local JavaScript is syntactically valid; inline code is rejected; and the service worker precaches every local script and stylesheet the pages load
 - **JavaScript behavioral tests** (`tests/lib.test.mjs`, `tests/sw.test.mjs`): tracker data logic and service-worker caching/offline behavior
+- **Playwright browser tests** (`tests/e2e/`): deterministic mocked tracker data verifies filtering, full-screen lightbox centering, and hiding stale images while the next image loads
 - **Python tests** (`tests/`): `download_images.py`'s header auto-detection, manifest format, and duplicate/failed-download handling; `sets_js.py`'s entry/field parsing and comment-stripping — the one shared parser `download_assets.py`, `backup_sheets.py`, and `check_logos.py` all depend on
 - **Quality Gate** makes the scanner wait for SonarCloud's server-side result; a failed gate fails the analysis job
 - **Deploy** publishes only the runtime site files to GitHub Pages **only if tests and the SonarCloud Quality Gate pass** (skipped on PRs), so tests, scripts, backups, and development configuration are not included in the public artifact
@@ -137,7 +138,7 @@ Both pages also enforce a Content Security Policy. Scripts and styles live in lo
 
 Renovate (`.github/renovate.json`) keeps GitHub Actions and development dependencies up to date automatically.
 
-Run locally: `node tests/ci_checks.mjs`, `node tests/lib.test.mjs`, and `python3 -m unittest discover -s tests`.
+Run locally: `node tests/ci_checks.mjs`, `npm run test:coverage`, `npm run test:e2e`, and `python3 -m unittest discover -s tests`.
 
 ---
 
