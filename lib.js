@@ -178,3 +178,12 @@ function exportCsv(kind, list){
     [it.card,it.num,it.variant,it.group,it.price].concat(kind==='owned'?[it.qty]:[])));
   return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
 }
+
+// Expose the pure helpers to Node's test runner. In browsers `module` is not
+// defined, so lib.js continues to behave as a classic script with globals.
+if(typeof module!=="undefined" && module.exports){
+  module.exports={
+    csvToRows,priceMid,parseHaveQty,detectColumns,rowsToItems,imgCandidatesPure,
+    esc,sortItems,exportText,exportCsv,csvEscape
+  };
+}

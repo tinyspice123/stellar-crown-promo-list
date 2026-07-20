@@ -1,18 +1,16 @@
 // Behavioral tests for lib.js's pure functions - run: node tests/lib.test.mjs
-// lib.js is a plain classic script (no import/export, by design — see its
-// header comment), so it's loaded here the same way ci_checks.mjs loads
-// sets.js: eval the source, then grab the functions off the returned object.
+// lib.js remains a plain classic script for browsers and exposes its pure
+// helpers through CommonJS when loaded by Node's test runner.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import { createRequire } from 'node:module';
 
-const libSrc = fs.readFileSync(new URL('../lib.js', import.meta.url), 'utf8');
+// Load the real file so V8/c8 attributes executed lines to lib.js. Evaluating
+// its source through new Function creates an anonymous script whose coverage
+// SonarQube cannot match to the repository file.
+const require = createRequire(import.meta.url);
 const {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
-       esc, sortItems, exportText, exportCsv, csvEscape} =
-  new Function(libSrc + `
-    return {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
-            esc, sortItems, exportText, exportCsv, csvEscape};
-  `)();
+       esc, sortItems, exportText, exportCsv, csvEscape} = require('../lib.js');
 
 test('csvToRows: simple rows', () => {
   assert.deepStrictEqual(csvToRows('a,b\n1,2'), [['a','b'],['1','2']]);

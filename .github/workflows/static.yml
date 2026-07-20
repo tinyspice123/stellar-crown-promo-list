@@ -87,14 +87,26 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install coverage tool
-        run: npm install --no-save c8
+      - name: Setup Python
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Install coverage tools
+        run: |
+          npm install --no-save c8
+          python -m pip install coverage
 
       - name: Generate JavaScript coverage
         run: npx c8 --reporter=lcov node tests/lib.test.mjs
 
-      - name: Check coverage file exists
-        run: ls -la coverage
+      - name: Generate Python coverage
+        run: |
+          python -m coverage run --source=scripts -m unittest discover -s tests -v
+          python -m coverage xml -o coverage.xml
+
+      - name: Check coverage files exist
+        run: ls -la coverage/lcov.info coverage.xml
 
       - name: Analyze with SonarQube
         uses: SonarSource/sonarqube-scan-action@v8.2.1
@@ -108,6 +120,7 @@ jobs:
             -Dsonar.organization=tinyspice123
             -Dsonar.scm.provider=git
             -Dsonar.python.file.suffixes=.py
+            -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   deploy:
