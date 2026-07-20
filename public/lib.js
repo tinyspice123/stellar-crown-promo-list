@@ -2,7 +2,7 @@
 //  Shared pure logic for the tracker — CSV parsing, row → item mapping,
 //  price math, image fallback chains. Loaded as a plain classic script
 //  (no import/export) so index.html and tracker.html can both use it
-//  as globals, and tests/lib.test.mjs can eval it directly in Node.
+//  as globals, and tests/unit/lib.test.mjs can load it directly in Node.
 //  Keep every function here side-effect-free (no DOM, no fetch) so it
 //  stays easy to test.
 // =====================================================================

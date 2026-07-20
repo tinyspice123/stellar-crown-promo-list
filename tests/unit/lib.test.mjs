@@ -1,4 +1,4 @@
-// Behavioral tests for lib.js's pure functions - run: node tests/lib.test.mjs
+// Behavioral tests for public/lib.js's pure functions - run: npm run test:coverage
 // lib.js remains a plain classic script for browsers and exposes its pure
 // helpers through CommonJS when loaded by Node's test runner.
 import { test } from 'node:test';
@@ -47,7 +47,7 @@ test('parseHaveQty: no -> 0', () => { assert.equal(parseHaveQty('no'), 0); });
 
 test('detectColumns: documented sheet header maps to the right column indices', () => {
   // tracker.html matches header text by simple substring ("number", "variant",
-  // "image", ...) - this is the sheet layout template.csv and the README document.
+  // "image", ...) - this is the docs/template.csv layout documented in README.
   const header = ['Group','Card','Number','Variant','Source','Status','Price','Have','Image'];
   assert.deepStrictEqual(detectColumns(header),
     {cGroup:0,cCard:1,cNum:2,cVar:3,cSrc:4,cStatus:5,cPrice:6,cHave:7,cImg:8});

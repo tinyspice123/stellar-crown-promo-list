@@ -1,4 +1,4 @@
-// Zero-dependency CI checks for the tracker site. Run: node tests/ci_checks.mjs
+// Zero-dependency CI checks for the tracker site. Run: npm run test:site
 import fs from 'node:fs';
 import path from 'node:path';
 let failures = 0;

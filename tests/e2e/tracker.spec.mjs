@@ -7,7 +7,7 @@ const SHEET = [
   'Test Group,Pikachu,1/100,Standard,Playwright,,£1,TRUE,',
   'Test Group,Eevee,2/100,Standard,Playwright,,£2,FALSE,',
 ].join('\n');
-const TEST_IMAGE = path.resolve('assets/icon-192.png');
+const TEST_IMAGE = path.resolve('public/assets/icon-192.png');
 
 async function mockTrackerData(page, highResolutionDelay = 0) {
   await page.route('https://fonts.googleapis.com/**', route => route.fulfill({
