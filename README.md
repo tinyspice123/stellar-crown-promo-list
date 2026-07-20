@@ -217,6 +217,7 @@ repo/
 ├── .github/renovate.json   # Automated dependency updates (Renovate)
 ├── .github/workflows/static.yml   # tests → deploy pipeline
 ├── .github/workflows/backup.yml   # weekly sheet snapshots + logo reachability check
+├── sonar-project.properties # SonarCloud analysis settings (e.g. Python version)
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # service worker (offline caching)
 ├── img/<set-id>/           # Per-set downloaded card images + manifest.txt
