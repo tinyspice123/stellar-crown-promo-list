@@ -94,7 +94,7 @@ catch (e) { fail('manifest.json invalid: ' + e.message); }
 const swSrc = fs.readFileSync('sw.js', 'utf8');
 if (!swSrc.includes("const IMAGE_CACHE = 'card-images-v1'"))
   fail('sw.js: persistent image cache is not configured');
-if (!swSrc.includes("res.type === 'opaque'"))
+if (!/\.type\s*===\s*['"]opaque['"]/.test(swSrc))
   fail('sw.js: cross-origin opaque card images will not be cached');
 const shellM = swSrc.match(/const SHELL = \[([^\]]*)\]/);
 if (!shellM) fail('sw.js: SHELL list not found');
