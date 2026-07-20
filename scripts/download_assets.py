@@ -5,9 +5,9 @@ image APIs for its chrome.
 
 Usage:  python3 download_assets.py
 
-Reads sets.js, then for every set tries (in order): the custom `logo`
+Reads public/sets.js, then for every set tries (in order): the custom `logo`
 URL, pokemontcg.io (via tcgSet), TCGdex (via tcgdexSet), and saves the
-first success to assets/logos/<set-id>.png. The pages check that local
+first success to public/assets/logos/<set-id>.png. The pages check that local
 path first, so once committed, logos load from your own repo.
 
 Re-run after adding sets. Requires Python 3, no packages.
@@ -39,7 +39,7 @@ def candidates(entry):
     return cands
 
 
-def download(entries, out=Path("assets/logos"), fetcher=fetch):
+def download(entries, out=Path("public/assets/logos"), fetcher=fetch):
     if not entries:
         print("No active sets found in sets.js")
         return 1
@@ -74,7 +74,7 @@ def download(entries, out=Path("assets/logos"), fetcher=fetch):
 
 
 def main():
-    entries = parse_sets(Path("sets.js").read_text(encoding="utf-8"))
+    entries = parse_sets(Path("public/sets.js").read_text(encoding="utf-8"))
     return download(entries)
 
 

@@ -44,7 +44,7 @@ class DownloadImagesTest(unittest.TestCase):
         cls.tmp = Path(tempfile.mkdtemp())
         cls.csvf = make_fixture(cls.tmp)
         cls.code, cls.out = run_script([cls.csvf, "test-set"], cls.tmp)
-        cls.imgdir = cls.tmp / "img" / "test-set"
+        cls.imgdir = cls.tmp / "public" / "img" / "test-set"
 
     def test_success_exit_code(self):
         self.assertEqual(self.code, 0)
@@ -114,7 +114,7 @@ class DownloadImagesTest(unittest.TestCase):
         self.assertIn("No set id given", out)
         self.assertIn("No variant-like column", out)
         self.assertIn("No number-like column", out)
-        self.assertTrue((case_dir / "img" / "manifest.txt").exists())
+        self.assertTrue((case_dir / "public" / "img" / "manifest.txt").exists())
 
 if __name__ == "__main__":
     unittest.main()

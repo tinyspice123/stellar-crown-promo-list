@@ -74,7 +74,7 @@ def check(entries, is_reachable=reachable):
 
 
 def main():
-    entries = parse_sets(Path("sets.js").read_text(encoding="utf-8"))
+    entries = parse_sets(Path("public/sets.js").read_text(encoding="utf-8"))
     return check(entries)
 
 

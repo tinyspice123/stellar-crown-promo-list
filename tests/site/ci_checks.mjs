@@ -1,12 +1,15 @@
 // Zero-dependency CI checks for the tracker site. Run: node tests/ci_checks.mjs
 import fs from 'node:fs';
+import path from 'node:path';
 let failures = 0;
+const SITE = 'public';
+const sitePath = file => path.join(SITE, file);
 const fail = m => { console.error('  FAIL ' + m); failures++; };
 const ok = m => console.log('  ok ' + m);
 
 // ---------- sets.js ----------
 console.log('sets.js');
-const setsSrc = fs.readFileSync('sets.js', 'utf8');
+const setsSrc = fs.readFileSync(sitePath('sets.js'), 'utf8');
 let SETS;
 // This CI-only script evals the repo's own checked-in sets.js to validate its
 // syntax, with zero external/network input; there's no dependency-free way to
@@ -54,7 +57,7 @@ else ok('SonarQube Quality Gate blocks the analysis job');
 // ---------- HTML pages ----------
 for (const file of ['index.html', 'tracker.html']) {
   console.log(file);
-  const html = fs.readFileSync(file, 'utf8');
+  const html = fs.readFileSync(sitePath(file), 'utf8');
 
   // inline content inside <script src=...> is silently dead - regression test
   const deadInline = [...html.matchAll(/<script src="[^"]+">([\s\S]*?)<\/script>/g)]
@@ -94,23 +97,23 @@ for (const file of ['index.html', 'tracker.html']) {
 // ---------- local JavaScript ----------
 for (const file of ['lib.js', 'index.js', 'tracker.js']) {
   console.log(file);
-  try { new Function(fs.readFileSync(file, 'utf8')); ok('syntax OK'); } // NOSONAR
+  try { new Function(fs.readFileSync(sitePath(file), 'utf8')); ok('syntax OK'); } // NOSONAR
   catch (e) { fail('syntax error: ' + e.message); }
 }
 for (const file of ['index.html', 'tracker.html']) {
-  if (!fs.readFileSync(file, 'utf8').includes('<script src="lib.js">')) fail(`${file} does not load lib.js`);
+  if (!fs.readFileSync(sitePath(file), 'utf8').includes('<script src="lib.js">')) fail(`${file} does not load lib.js`);
 }
 
 // ---------- PWA files ----------
 console.log('pwa');
 for (const f of ['manifest.json', 'sw.js', 'assets/icon-192.png', 'assets/icon-512.png']) {
-  if (!fs.existsSync(f)) fail('missing ' + f); 
+  if (!fs.existsSync(sitePath(f))) fail('missing ' + f);
 }
-try { JSON.parse(fs.readFileSync('manifest.json', 'utf8')); ok('manifest.json is valid JSON'); }
+try { JSON.parse(fs.readFileSync(sitePath('manifest.json'), 'utf8')); ok('manifest.json is valid JSON'); }
 catch (e) { fail('manifest.json invalid: ' + e.message); }
 // every local script and stylesheet used by the pages must be in the precache SHELL,
 // or an offline-installed PWA opens a page whose scripts 404 (real bug once)
-const swSrc = fs.readFileSync('sw.js', 'utf8');
+const swSrc = fs.readFileSync(sitePath('sw.js'), 'utf8');
 if (!swSrc.includes("const IMAGE_CACHE = 'card-images-v1'"))
   fail('sw.js: persistent image cache is not configured');
 if (!/\.type\s*===\s*['"]opaque['"]/.test(swSrc))
@@ -120,9 +123,9 @@ if (!shellM) fail('sw.js: SHELL list not found');
 else {
   const shell = new Set([...shellM[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
   for (const page of ['index.html', 'tracker.html']) {
-    const srcs = [...fs.readFileSync(page, 'utf8').matchAll(/<script src="([^"]+)"/g)]
+    const srcs = [...fs.readFileSync(sitePath(page), 'utf8').matchAll(/<script src="([^"]+)"/g)]
       .map(m => m[1]).filter(s => !/^https?:/.test(s));
-    const stylesheets = [...fs.readFileSync(page, 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+)"/g)]
+    const stylesheets = [...fs.readFileSync(sitePath(page), 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+)"/g)]
       .map(m => m[1]).filter(s => !/^https?:/.test(s));
     for (const asset of [...srcs, ...stylesheets]) {
       if (shell.has(asset)) ok(`${page}: ${asset} is precached`);
@@ -130,7 +133,7 @@ else {
     }
   }
 }
-try { new Function(fs.readFileSync('sw.js', 'utf8').replace(/\bself\./g,'__s.').replace(/\blocation\./g,'__l.').replace(/\bcaches\./g,'__c.')); ok('sw.js syntax OK'); } // NOSONAR
+try { new Function(fs.readFileSync(sitePath('sw.js'), 'utf8').replace(/\bself\./g,'__s.').replace(/\blocation\./g,'__l.').replace(/\bcaches\./g,'__c.')); ok('sw.js syntax OK'); } // NOSONAR
 catch (e) { fail('sw.js syntax error: ' + e.message); }
 
 console.log(failures ? `\n${failures} check(s) FAILED` : '\nAll checks passed');

@@ -24,7 +24,7 @@ def validate_delivery_host(source_url, final_url):
     if source_host == "docs.google.com" and final_host not in allowed:
         raise ValueError(
             f"Google redirected to unexpected host {final_host!r}; update the "
-            "Content Security Policy in index.html and tracker.html")
+            "Content Security Policy in public/index.html and public/tracker.html")
 
 
 def backup(entries, out=Path("backups"), opener=urllib.request.urlopen):
@@ -61,7 +61,7 @@ def backup(entries, out=Path("backups"), opener=urllib.request.urlopen):
 
 
 def main():
-    entries = parse_sets(Path("sets.js").read_text(encoding="utf-8"))
+    entries = parse_sets(Path("public/sets.js").read_text(encoding="utf-8"))
     return backup(entries)
 
 

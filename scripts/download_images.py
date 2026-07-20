@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Download card images from Google Sheet and organize into img/ folder.
+Download card images from Google Sheet into public/img/.
 
 Usage:
   1. Export the set's sheet TAB as CSV (File → Download → CSV)
@@ -8,7 +8,7 @@ Usage:
   3. Run: python3 download_images.py sheet.csv <set-id>
      where <set-id> matches the key in sets.js, e.g.:
        python3 download_images.py stellar.csv stellar-crown
-     Images land in img/<set-id>/ with img/<set-id>/manifest.txt
+     Images land in public/img/<set-id>/ with a manifest.txt
 
 This will:
   - Read all Image column URLs from the CSV
@@ -102,7 +102,7 @@ rows = raw[header_row_idx+1:]
 print(f"✓ Found {len(rows)} data rows")
 
 # Create img folder
-img_dir = Path("img") / set_id if set_id else Path("img")
+img_dir = Path("public/img") / set_id if set_id else Path("public/img")
 img_dir.mkdir(parents=True, exist_ok=True)
 
 # Extract unique Image URLs
