@@ -7,18 +7,13 @@ changes are a normal git diff.
 
 Run manually any time:  python3 backup_sheets.py
 """
-import re, sys, urllib.request
+import sys, urllib.request
 from pathlib import Path
 
-src = Path("sets.js").read_text(encoding="utf-8")
-active = re.sub(r"^\s*//.*$", "", src, flags=re.M)
+from sets_js import parse_sets
 
-sets = []
-for m in re.finditer(r'"([\w.\-]+)"\s*:\s*\{(.*?)\n\s*\}', active, re.S):
-    sid, body = m.group(1), m.group(2)
-    sm = re.search(r'sheet\s*:\s*"([^"]+)"', body)
-    if sm:
-        sets.append((sid, sm.group(1)))
+entries = parse_sets(Path("sets.js").read_text(encoding="utf-8"))
+sets = [(e["id"], e["sheet"]) for e in entries if e.get("sheet")]
 
 if not sets:
     print("No sets with sheet links found in sets.js")

@@ -2,8 +2,8 @@
 // Strategy: network-first for pages/config (so updates land immediately),
 // cache-first for images and logos (fast + offline), never cache sheet CSVs
 // beyond a session fallback.
-const VERSION = 'v1';
-const SHELL = ['./', 'index.html', 'tracker.html', 'sets.js', 'manifest.json'];
+const VERSION = 'v2';  // bumped: SHELL changed (lib.js added)
+const SHELL = ['./', 'index.html', 'tracker.html', 'sets.js', 'lib.js', 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

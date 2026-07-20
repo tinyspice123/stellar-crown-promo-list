@@ -14,21 +14,9 @@ for the script that mirrors logos into the repo). Run by the weekly
 import re, sys, urllib.request
 from pathlib import Path
 
-src = Path("sets.js").read_text(encoding="utf-8")
-active = re.sub(r"^\s*//.*$", "", src, flags=re.M)  # strip full-line comments
+from sets_js import parse_sets
 
-entries = []
-for m in re.finditer(r'"([\w.\-]+)"\s*:\s*\{(.*?)\n\s*\}', active, re.S):
-    sid, body = m.group(1), m.group(2)
-    def field(name):
-        fm = re.search(r'%s\s*:\s*"([^"]+)"' % name, body)
-        return fm.group(1) if fm else None
-    entries.append({
-        "id": sid,
-        "logo": field("logo"),
-        "tcgSet": field("tcgSet"),
-        "tcgdexSet": field("tcgdexSet"),
-    })
+entries = parse_sets(Path("sets.js").read_text(encoding="utf-8"))
 
 UA = {"User-Agent": "Mozilla/5.0 (card-tracker-logo-check)"}
 
@@ -46,9 +34,9 @@ def reachable(url):
 ok, broken, skipped = 0, [], 0
 for e in entries:
     cands = []
-    if e["logo"]: cands.append(e["logo"])
-    if e["tcgSet"]: cands.append(f"https://images.pokemontcg.io/{e['tcgSet']}/logo.png")
-    if e["tcgdexSet"]:
+    if e.get("logo"): cands.append(e["logo"])
+    if e.get("tcgSet"): cands.append(f"https://images.pokemontcg.io/{e['tcgSet']}/logo.png")
+    if e.get("tcgdexSet"):
         serie = re.match(r"[a-z]+", e["tcgdexSet"], re.I)
         if serie:
             cands.append(f"https://assets.tcgdex.net/en/{serie.group(0).lower()}/{e['tcgdexSet']}/logo.png")

@@ -5,9 +5,11 @@
 import fs from 'fs';
 
 const libSrc = fs.readFileSync(new URL('../lib.js', import.meta.url), 'utf8');
-const {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure} =
+const {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
+       esc, sortItems, exportText, exportCsv, csvEscape} =
   new Function(libSrc + `
-    return {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure};
+    return {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
+            esc, sortItems, exportText, exportCsv, csvEscape};
   `)();
 
 let failures = 0;
@@ -92,4 +94,46 @@ console.log('imgCandidatesPure');
 }
 
 console.log(failures ? `\n${failures} check(s) FAILED` : '\nAll checks passed');
+console.log('esc');
+eq(esc('<b>&"\''), '&lt;b&gt;&amp;&quot;&#39;', 'escapes all five HTML-sensitive chars');
+eq(esc('Pikachu 025/191'), 'Pikachu 025/191', 'plain text passes through');
+
+console.log('sortItems');
+const cards=[
+  {card:'Beta', num:'10', price:'£2'},
+  {card:'Alpha', num:'2', price:''},
+  {card:'Alpha', num:'10', price:'£5'},
+];
+eq(sortItems(cards,''), cards, 'empty mode returns sheet order (same array)');
+eq(sortItems(cards,'name').map(c=>c.card+' '+c.num),
+   ['Alpha 2','Alpha 10','Beta 10'], 'name sort is numeric-aware on the number');
+eq(sortItems(cards,'price-desc').map(c=>c.card),
+   ['Alpha','Beta','Alpha'], 'price desc, unpriced card sinks to the bottom');
+eq(sortItems(cards,'price-asc').map(c=>c.price),
+   ['£2','£5',''], 'price asc, unpriced card still last');
+eq(cards[0].card, 'Beta', 'input array is not mutated');
+
+console.log('exportText');
+const exList=[
+  {card:'Pikachu', num:'025', variant:'Regular', group:'Base', price:'£1.20', qty:0},
+  {card:'Eevee', num:'133', variant:'Reverse holo', group:'Base', price:'', qty:3},
+];
+eq(exportText('Stellar Crown','missing',[exList[0]]),
+   'Stellar Crown \u2014 missing (1 card)\n- Pikachu 025 \u2014 £1.20',
+   'regular variant omitted, price appended, singular "card"');
+eq(exportText('Stellar Crown','owned',[exList[1]]),
+   'Stellar Crown \u2014 owned (1 card)\n- Eevee 133 (Reverse holo) \u00d73',
+   'non-regular variant and qty>1 shown for owned');
+
+console.log('exportCsv / csvEscape');
+eq(csvEscape('plain'), 'plain', 'no quoting when unneeded');
+eq(csvEscape('a,b'), '"a,b"', 'comma triggers quoting');
+eq(csvEscape('say "hi"'), '"say ""hi"""', 'embedded quotes doubled');
+const csv=exportCsv('owned',[{card:'Mr. Mime, Jr.', num:'12', variant:'Regular', group:'Base', price:'£3', qty:2}]);
+eq(csv.split('\n')[0], 'Card,Number,Variant,Group,Price,Have', 'owned export gains Have column');
+eq(csv.split('\n')[1], '"Mr. Mime, Jr.",12,Regular,Base,£3,2', 'comma in card name is quoted');
+eq(exportCsv('missing',[exList[0]]).split('\n')[0],
+   'Card,Number,Variant,Group,Price', 'missing export has no Have column');
+
+
 process.exit(failures ? 1 : 0);

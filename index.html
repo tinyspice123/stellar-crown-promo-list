@@ -88,7 +88,7 @@ async function progress(cfg){
   if(/^\s*</.test(text)) throw 0;
   const rows=csvToRows(text);
   // find header row: needs a "card"-ish and "have"-ish column
-  let hi=-1,ci=-1,vi=-1,haveI=-1;
+  let hi=-1,ci=-1,haveI=-1;
   for(let r=0;r<Math.min(rows.length,5);r++){
     const low=rows[r].map(x=>x.trim().toLowerCase());
     const c=low.findIndex(h=>h.includes("card"));

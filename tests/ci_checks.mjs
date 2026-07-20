@@ -76,6 +76,22 @@ for (const f of ['manifest.json', 'sw.js', 'assets/icon-192.png', 'assets/icon-5
 }
 try { JSON.parse(fs.readFileSync('manifest.json', 'utf8')); ok('manifest.json is valid JSON'); }
 catch (e) { fail('manifest.json invalid: ' + e.message); }
+// every local <script src> used by the pages must be in the precache SHELL,
+// or an offline-installed PWA opens a page whose scripts 404 (real bug once)
+const swSrc = fs.readFileSync('sw.js', 'utf8');
+const shellM = swSrc.match(/const SHELL = \[([^\]]*)\]/);
+if (!shellM) fail('sw.js: SHELL list not found');
+else {
+  const shell = [...shellM[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+  for (const page of ['index.html', 'tracker.html']) {
+    const srcs = [...fs.readFileSync(page, 'utf8').matchAll(/<script src="([^"]+)"/g)]
+      .map(m => m[1]).filter(s => !/^https?:/.test(s));
+    for (const s of srcs) {
+      if (shell.includes(s)) ok(`${page}: ${s} is precached`);
+      else fail(`${page} loads ${s} but sw.js SHELL doesn't precache it - offline PWA would break`);
+    }
+  }
+}
 try { new Function(fs.readFileSync('sw.js', 'utf8').replace(/\bself\./g,'__s.').replace(/\blocation\./g,'__l.').replace(/\bcaches\./g,'__c.')); ok('sw.js syntax OK'); }
 catch (e) { fail('sw.js syntax error: ' + e.message); }
 

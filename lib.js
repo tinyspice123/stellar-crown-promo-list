@@ -9,25 +9,36 @@
 
 // Quote-aware CSV parser: handles quoted fields, embedded commas/newlines,
 // escaped quotes (""), CRLF/LF line endings, and a leading BOM.
+// Reads a quoted CSV field starting just after the opening quote.
+// Handles escaped quotes ("") and unterminated quotes (rest of input).
+// Returns the field text and the index of the first unconsumed char.
+function readQuotedCsvField(text, start){
+  let out="", i=start;
+  while(i<text.length){
+    const c=text[i];
+    if(c==='"'){
+      if(text[i+1]==='"'){ out+='"'; i+=2; continue; }  // escaped quote
+      return {text:out, next:i+1};                       // closing quote
+    }
+    out+=c; i++;
+  }
+  return {text:out, next:i};  // unterminated: take everything to the end
+}
+
 function csvToRows(text){
   if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
-  const rows=[]; let row=[], field="", inQ=false;
-  for(let i=0;i<text.length;i++){
+  const rows=[]; let row=[], field="";
+  const endField=()=>{ row.push(field); field=""; };
+  const endRow=()=>{ endField(); rows.push(row); row=[]; };
+  let i=0;
+  while(i<text.length){
     const c=text[i];
-    if(inQ){
-      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; }
-      else field+=c;
-    }else{
-      if(c==='"') inQ=true;
-      else if(c===','){ row.push(field); field=""; }
-      else if(c==='\n'||c==='\r'){
-        if(c==='\r'&&text[i+1]==='\n') i++;
-        row.push(field); rows.push(row); row=[]; field="";
-      }
-      else field+=c;
-    }
+    if(c==='"'){ const q=readQuotedCsvField(text,i+1); field+=q.text; i=q.next; continue; }
+    if(c===','){ endField(); i++; continue; }
+    if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n'){ i++; } endRow(); i++; continue; }
+    field+=c; i++;
   }
-  if(field!==""||row.length){ row.push(field); rows.push(row); }
+  if(field!==""||row.length){ endRow(); }
   return rows;
 }
 
@@ -111,4 +122,59 @@ function imgCandidatesPure(it, cfg, setId, imgMap){
   }
   if(p) out.push(`https://images.pokemontcg.io/${cfg.promoSet||"svp"}/${parseInt(p[1],10)}.png`);
   return out;
+}
+
+// HTML-escape for text interpolated into innerHTML templates.
+function esc(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Sort a list of items by mode: "" = sheet order (returns the list as-is),
+// "name" = card name then numeric-aware number, "price-asc"/"price-desc" =
+// by priceMid with unpriced cards always sinking to the bottom.
+function sortItems(list, mode){
+  if(!mode) return list;
+  const arr=[...list];
+  if(mode==='name'){
+    arr.sort((a,b)=> a.card.localeCompare(b.card) || a.num.localeCompare(b.num,undefined,{numeric:true}));
+  }else{
+    const dir = mode==='price-desc' ? -1 : 1;
+    arr.sort((a,b)=>{
+      const pa=priceMid(a.price), pb=priceMid(b.price);
+      if(pa==null && pb==null) return 0;
+      if(pa==null) return 1;           // unpriced cards sink to the bottom
+      if(pb==null) return -1;
+      return (pa-pb)*dir;
+    });
+  }
+  return arr;
+}
+
+// Plain-text export: "<set> — missing (3 cards)" header + one "- Card Num" line
+// per item, with variant / ×qty (owned only) / price appended when present.
+function exportText(setName, kind, list){
+  const head=`${setName} \u2014 ${kind} (${list.length} card${list.length===1?'':'s'})`;
+  const lines=list.map(it=>{
+    let l=`- ${it.card} ${it.num}`;
+    if(it.variant && it.variant.toLowerCase()!=='regular') l+=` (${it.variant})`;
+    if(kind==='owned' && it.qty>1) l+=` \u00d7${it.qty}`;
+    if(it.price) l+=` \u2014 ${it.price}`;
+    return l;
+  });
+  return head+"\n"+lines.join("\n");
+}
+
+// RFC-4180-style CSV field quoting: wrap in quotes when the value contains
+// a quote, comma or newline; double any embedded quotes.
+function csvEscape(v){
+  const s=String(v);
+  return /["\n,]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+
+// CSV export; owned exports gain a Have column with quantities.
+function exportCsv(kind, list){
+  const rows=[["Card","Number","Variant","Group","Price"].concat(kind==='owned'?["Have"]:[])];
+  list.forEach(it=>rows.push(
+    [it.card,it.num,it.variant,it.group,it.price].concat(kind==='owned'?[it.qty]:[])));
+  return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
 }

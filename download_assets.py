@@ -15,23 +15,9 @@ Re-run after adding sets. Requires Python 3, no packages.
 import json, re, sys, urllib.request
 from pathlib import Path
 
-src = Path("sets.js").read_text(encoding="utf-8")
+from sets_js import parse_sets
 
-# strip // comments so commented-out template sets are ignored
-active = re.sub(r"^\s*//.*$", "", src, flags=re.M)
-
-entries = []
-for m in re.finditer(r'"([\w.\-]+)"\s*:\s*\{(.*?)\n\s*\}', active, re.S):
-    sid, body = m.group(1), m.group(2)
-    def field(name):
-        fm = re.search(r'%s\s*:\s*"([^"]+)"' % name, body)
-        return fm.group(1) if fm else None
-    entries.append({
-        "id": sid,
-        "logo": field("logo"),
-        "tcgSet": field("tcgSet"),
-        "tcgdexSet": field("tcgdexSet"),
-    })
+entries = parse_sets(Path("sets.js").read_text(encoding="utf-8"))
 
 if not entries:
     print("No active sets found in sets.js"); sys.exit(1)
@@ -47,9 +33,9 @@ def fetch(url):
 got, missed = 0, []
 for e in entries:
     cands = []
-    if e["logo"]: cands.append(e["logo"])
-    if e["tcgSet"]: cands.append(f"https://images.pokemontcg.io/{e['tcgSet']}/logo.png")
-    if e["tcgdexSet"]:
+    if e.get("logo"): cands.append(e["logo"])
+    if e.get("tcgSet"): cands.append(f"https://images.pokemontcg.io/{e['tcgSet']}/logo.png")
+    if e.get("tcgdexSet"):
         serie = re.match(r"[a-z]+", e["tcgdexSet"], re.I)
         if serie:
             cands.append(f"https://assets.tcgdex.net/en/{serie.group(0).lower()}/{e['tcgdexSet']}/logo.png")

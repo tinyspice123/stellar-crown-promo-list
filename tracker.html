@@ -236,14 +236,14 @@
   </select>
   <label class="toggle"><input type="checkbox" id="missOnly"> Missing only</label>
   <span class="exportwrap">
-    <button type="button" class="exportbtn" id="exportMissing">⤓ Missing</button>
+    <button type="button" class="exportbtn" id="exportMissing" aria-haspopup="menu" aria-expanded="false">⤓ Missing</button>
     <div class="exportmenu" data-menu>
       <button type="button" data-act="copy">Copy list</button>
       <button type="button" data-act="csv">Download CSV</button>
     </div>
   </span>
   <span class="exportwrap">
-    <button type="button" class="exportbtn" id="exportOwned">⤓ Owned</button>
+    <button type="button" class="exportbtn" id="exportOwned" aria-haspopup="menu" aria-expanded="false">⤓ Owned</button>
     <div class="exportmenu" data-menu>
       <button type="button" data-act="copy">Copy list</button>
       <button type="button" data-act="csv">Download CSV</button>
@@ -313,10 +313,11 @@ function updateSyncedLabel(){
   const el=document.getElementById('syncedInfo');
   if(!lastSyncedAt){ el.textContent=''; return; }
   const s=Math.round((Date.now()-lastSyncedAt)/1000);
-  const txt = s<10 ? 'Synced just now'
-    : s<60 ? `Synced ${s}s ago`
-    : s<3600 ? `Synced ${Math.round(s/60)}m ago`
-    : `Synced ${Math.round(s/3600)}h ago`;
+  let txt;
+  if(s<10) txt='Synced just now';
+  else if(s<60) txt=`Synced ${s}s ago`;
+  else if(s<3600) txt=`Synced ${Math.round(s/60)}m ago`;
+  else txt=`Synced ${Math.round(s/3600)}h ago`;
   el.textContent=txt;
 }
 setInterval(updateSyncedLabel, 15000);
@@ -401,7 +402,7 @@ async function loadImgManifest(){
         imgMap.set(parts.slice(0,-1).join('|'), file);
       }
     });
-  }catch(e){}
+  }catch{ /* the image manifest is optional; a missing or unparseable one is fine */ }
 }
 
 function imgCandidates(it){ return imgCandidatesPure(it, cfg, SET_ID, imgMap); }
@@ -415,24 +416,7 @@ function buildGroupSel(){
   });
 }
 
-function sortItems(list){
-  const mode=document.getElementById('sortSel').value;
-  if(!mode) return list; // sheet order
-  const arr=[...list];
-  if(mode==='name'){
-    arr.sort((a,b)=> a.card.localeCompare(b.card) || a.num.localeCompare(b.num,undefined,{numeric:true}));
-  }else{
-    const dir = mode==='price-desc' ? -1 : 1;
-    arr.sort((a,b)=>{
-      const pa=priceMid(a.price), pb=priceMid(b.price);
-      if(pa==null && pb==null) return 0;
-      if(pa==null) return 1;           // unpriced cards sink to the bottom
-      if(pb==null) return -1;
-      return (pa-pb)*dir;
-    });
-  }
-  return arr;
-}
+// sortItems moved to lib.js (pure: takes the mode as an argument)
 
 // ---- collapsible groups (state kept per set) ----
 const COLLAPSE_KEY='collapse:'+SET_ID;
@@ -478,7 +462,7 @@ function changeQty(it,delta,cardDiv){
   span.textContent='\u00d7'+it.qty;
   span.classList.toggle('zero', !it.qty);
   const chip=cardDiv.querySelector('.havechip');
-  if(chip){ chip.textContent=it.qty>0?'OWNED':'NEED'; chip.classList.toggle('y',it.qty>0); chip.classList.toggle('n',!(it.qty>0)); }
+  if(chip){ chip.textContent=it.qty>0?'OWNED':'NEED'; chip.classList.toggle('y',it.qty>0); chip.classList.toggle('n',it.qty<=0); }
   stats();
   // CORS mode (text/plain = no preflight; Apps Script's redirect target
   // sends Access-Control-Allow-Origin:*) so we can READ the verdict and
@@ -511,7 +495,7 @@ function render(){
   document.getElementById('empty').style.display = shown.length? 'none':'block';
 
   [...new Set(shown.map(i=>i.group))].forEach(g=>{
-    const list=sortItems(shown.filter(i=>i.group===g));
+    const list=sortItems(shown.filter(i=>i.group===g), document.getElementById('sortSel').value);
     const own=list.filter(i=>i.qty>0).length;
     const folded=collapsed.has(g);
     const gh=document.createElement('div'); gh.className='grouphead'+(folded?' folded':'');
@@ -549,6 +533,17 @@ function cardEl(it){
   const cands=imgCandidates(it);
   const url=cands[0]||null, alts=cands.slice(1);
   const initial=esc(it.card.replace(/[^A-Za-z]/g,'').slice(0,2)||'?');
+  const zeroCls = it.qty ? '' : 'zero';
+  let qtyHtml;
+  if(WRITE_OK){
+    qtyHtml=`<div class="qtyctl" data-qty>
+           <button type="button" data-dec aria-label="one fewer">−</button>
+           <span class="${zeroCls}">×${it.qty}</span>
+           <button type="button" data-inc aria-label="one more">+</button>
+         </div>`;
+  }else{
+    qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
+  }
   d.innerHTML=`
     <div class="imgwrap${/reverse\s*holo/i.test(it.variant)?' rh':''}">
       ${url?`<img loading="lazy" alt="${esc(it.card)}" src="${url}"
@@ -566,13 +561,7 @@ function cardEl(it){
       <div class="var">${esc(it.variant)}</div>
       <div class="src">${esc(it.src)}</div>
     </div>
-    ${WRITE_OK
-      ? `<div class="qtyctl" data-qty>
-           <button type="button" data-dec aria-label="one fewer">−</button>
-           <span class="${it.qty? '':'zero'}">×${it.qty}</span>
-           <button type="button" data-inc aria-label="one more">+</button>
-         </div>`
-      : `<div class="qtytag ${it.qty? '':'zero'}">×${it.qty}</div>`}`;
+    ${qtyHtml}`;
   const img=d.querySelector('.imgwrap img');
   if(img) img.addEventListener('click',()=>openLightbox(it,img.src));
   if(WRITE_OK){
@@ -626,7 +615,7 @@ document.addEventListener('keydown',e=>{
     else if(e.key==='ArrowLeft'){ e.preventDefault(); lbStep(-1); }
     return;
   }
-  if(typing){ if(e.key==='Escape') document.activeElement.blur(); return; }
+  if(typing){ if(e.key==='Escape'){ document.activeElement.blur(); } return; }
   if(e.key==='/'){ e.preventDefault(); document.getElementById('q').focus(); }
   else if(e.key==='m'||e.key==='M'){ const c=document.getElementById('missOnly'); c.checked=!c.checked; render(); }
 });
@@ -640,7 +629,7 @@ function stats(){
   document.getElementById('sMiss').textContent=total-own;
   document.getElementById('sQty').textContent=items.reduce((a,b)=>a+b.qty,0);
   let vOwn=0,vMiss=0,anyPrice=false;
-  items.forEach(i=>{const p=priceMid(i.price); if(p==null)return; anyPrice=true; if(i.qty>0)vOwn+=p*i.qty; else vMiss+=p;});
+  items.forEach(i=>{const p=priceMid(i.price); if(p==null){ return; } anyPrice=true; if(i.qty>0)vOwn+=p*i.qty; else vMiss+=p;});
   document.getElementById('sValOwn').textContent='£'+vOwn.toFixed(0);
   document.getElementById('sValMiss').textContent='£'+vMiss.toFixed(0);
   document.getElementById('sValOwn').parentElement.style.display=anyPrice?'':'none';
@@ -657,32 +646,15 @@ function exportItems(kind){ // respects search + group filters; ignores the Miss
     if(!it.card) return false;
     if(gsel && it.group!==gsel) return false;
     if(q && !(it.card+" "+it.num+" "+it.variant).toLowerCase().includes(q)) return false;
-    return kind==='missing' ? !(it.qty>0) : it.qty>0;
+    return kind==='missing' ? it.qty<=0 : it.qty>0;
   });
 }
-function exportText(kind,list){
-  const head=`${cfg.name} \u2014 ${kind} (${list.length} card${list.length===1?'':'s'})`;
-  const lines=list.map(it=>{
-    let l=`- ${it.card} ${it.num}`;
-    if(it.variant && it.variant.toLowerCase()!=='regular') l+=` (${it.variant})`;
-    if(kind==='owned' && it.qty>1) l+=` \u00d7${it.qty}`;
-    if(it.price) l+=` \u2014 ${it.price}`;
-    return l;
-  });
-  return head+"\n"+lines.join("\n");
-}
-function exportCsv(kind,list){
-  const esc=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':String(v);
-  const rows=[["Card","Number","Variant","Group","Price"].concat(kind==='owned'?["Have"]:[])];
-  list.forEach(it=>rows.push(
-    [it.card,it.num,it.variant,it.group,it.price].concat(kind==='owned'?[it.qty]:[])));
-  return rows.map(r=>r.map(esc).join(",")).join("\n");
-}
+// exportText / exportCsv moved to lib.js
 function doExport(kind,act){
   const list=exportItems(kind);
   if(!list.length){ toast(`No ${kind} cards match the current filters`); return; }
   if(act==='copy'){
-    navigator.clipboard.writeText(exportText(kind,list))
+    navigator.clipboard.writeText(exportText(cfg.name,kind,list))
       .then(()=>toast(`Copied ${list.length} ${kind} card${list.length===1?'':'s'}`))
       .catch(()=>toast('Copy failed \u2014 browser blocked clipboard'));
   }else{
@@ -696,24 +668,37 @@ function doExport(kind,act){
     toast(`Downloaded ${list.length} ${kind} card${list.length===1?'':'s'}`);
   }
 }
+function closeExportMenus(){
+  document.querySelectorAll('.exportmenu.open').forEach(m=>m.classList.remove('open'));
+  document.querySelectorAll('.exportbtn[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false'));
+}
 document.querySelectorAll('.exportwrap').forEach(wrap=>{
   const btn=wrap.querySelector('.exportbtn'), menu=wrap.querySelector('[data-menu]');
   const kind=btn.id==='exportMissing'?'missing':'owned';
   btn.addEventListener('click',e=>{
     e.stopPropagation();
-    document.querySelectorAll('.exportmenu.open').forEach(m=>{ if(m!==menu) m.classList.remove('open'); });
-    menu.classList.toggle('open');
+    const wasOpen=menu.classList.contains('open');
+    closeExportMenus();
+    if(!wasOpen){ menu.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
   });
   menu.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',e=>{
-    e.stopPropagation(); menu.classList.remove('open'); doExport(kind,b.dataset.act);
+    e.stopPropagation(); closeExportMenus(); doExport(kind,b.dataset.act);
   }));
 });
-document.addEventListener('click',()=>document.querySelectorAll('.exportmenu.open').forEach(m=>m.classList.remove('open')));
+document.addEventListener('click',closeExportMenus);
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  const open=document.querySelector('.exportmenu.open');
+  if(!open) return;
+  const btn=open.closest('.exportwrap').querySelector('.exportbtn');
+  closeExportMenus();
+  btn.focus();  // hand focus back to the trigger, as a native menu would
+});
 
 document.getElementById('missOnly').addEventListener('change',render);
 document.getElementById('sortSel').addEventListener('change',render);
 
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+// esc moved to lib.js
 </script>
 <script>
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
