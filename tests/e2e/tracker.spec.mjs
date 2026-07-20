@@ -49,7 +49,7 @@ test('builds marketplace searches from the card details', async ({ page }) => {
   expect(new URL(await ebay.getAttribute('href')).searchParams.get('_nkw'))
     .toBe('Pikachu 1/100');
   expect(new URL(await cardmarket.getAttribute('href')).searchParams.get('searchString'))
-    .toBe('Pikachu 1/100');
+    .toBe('Pikachu SCR 1');
 
   await page.locator('#viewSel').selectOption('table');
   await expect(page.locator('.listtable [data-market="ebay"]')).toHaveCount(2);

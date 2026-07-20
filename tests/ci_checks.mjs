@@ -19,7 +19,7 @@ if (ids.length === 0) fail('no sets defined'); else ok(ids.length + ' active set
 
 const allowedSetFields = new Set([
   'name', 'sheet', 'tcgSet', 'tcgdexSet', 'code', 'logo',
-  'eyebrow', 'subtitle', 'imgTemplate', 'promoSet',
+  'eyebrow', 'subtitle', 'imgTemplate', 'promoSet', 'cardmarketSet',
 ]);
 for (const [id, cfg] of Object.entries(SETS)) {
   if (/^\d+$/.test(id)) fail(`key "${id}" is purely numeric - JS reorders these; rename it`);

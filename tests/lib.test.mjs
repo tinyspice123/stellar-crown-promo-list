@@ -183,18 +183,26 @@ test('marketplaceSearchUrls', async (t) => {
     const urls=marketplaceSearchUrls(
       {card:'Mr. Mime & Friends',num:'12/100',variant:'Regular'});
     const ebay=new URL(urls.ebay);
+    const cardmarket=new URL(urls.cardmarket);
     assert.equal(ebay.hostname,'www.ebay.co.uk');
     assert.equal(ebay.searchParams.get('_nkw'),
       'Mr. Mime & Friends 12/100');
+    assert.equal(cardmarket.searchParams.get('searchString'),'Mr. Mime & Friends');
   });
-  await t.test('keeps meaningful variants for eBay but not Cardmarket', () => {
+  await t.test('uses a Cardmarket set code for regular collector numbers', () => {
     const urls=marketplaceSearchUrls(
-      {card:'Archaludon',num:'107/142',variant:'Galaxy holo + GameStop stamp'});
+      {card:'Archaludon',num:'107/142',variant:'Galaxy holo + GameStop stamp'}, 'SCR');
     const cardmarket=new URL(urls.cardmarket);
     assert.equal(cardmarket.hostname,'www.cardmarket.com');
     assert.equal(cardmarket.searchParams.get('searchString'),
-      'Archaludon 107/142');
+      'Archaludon SCR 107');
     assert.equal(new URL(urls.ebay).searchParams.get('_nkw'),
       'Archaludon 107/142 Galaxy holo + GameStop stamp');
+  });
+  await t.test('keeps recognized promo prefixes without a set code', () => {
+    const urls=marketplaceSearchUrls(
+      {card:'Crabominable',num:'SVP 134',variant:'STAFF stamp'});
+    assert.equal(new URL(urls.cardmarket).searchParams.get('searchString'),
+      'Crabominable SVP 134');
   });
 });

@@ -202,12 +202,18 @@ function exportCsv(kind, list){
 
 // Marketplace search URLs stay useful when listings change, unlike links to
 // individual offers. Generic variants add no search value and are omitted.
-function marketplaceSearchUrls(it){
+function marketplaceSearchUrls(it,cardmarketSet=''){
   const variant=/^(?:regular|standard|normal)$/i.test((it.variant||'').trim())
     ? '' : (it.variant||'').trim();
-  const cardmarketQuery=[it.card,it.num]
+  const number=String(it.num||'').trim();
+  const promo=/^[A-Za-z][A-Za-z0-9-]*\s+\d+$/.test(number);
+  const regular=number.match(/^(\d+)(?:\/\d+)?$/);
+  let cardmarketNumber='';
+  if(promo) cardmarketNumber=number;
+  else if(cardmarketSet && regular) cardmarketNumber=`${cardmarketSet} ${regular[1]}`;
+  const cardmarketQuery=[it.card,cardmarketNumber]
     .map(v=>String(v||'').trim()).filter(Boolean).join(' ');
-  const ebayQuery=[it.card,it.num,variant]
+  const ebayQuery=[it.card,number,variant]
     .map(v=>String(v||'').trim()).filter(Boolean).join(' ');
   return {
     cardmarket:`https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encodeURIComponent(cardmarketQuery)}`,

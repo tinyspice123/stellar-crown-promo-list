@@ -281,7 +281,7 @@ function cardEl(it){
 }
 
 function marketplaceLinks(it){
-  const urls=marketplaceSearchUrls(it);
+  const urls=marketplaceSearchUrls(it,cfg.cardmarketSet);
   const card=esc(it.card);
   return `<div class="marketlinks">
     <a data-market="cardmarket" href="${esc(urls.cardmarket)}" target="_blank" rel="noopener noreferrer"
