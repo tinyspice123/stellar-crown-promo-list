@@ -32,6 +32,7 @@ async function cacheFirstImage(request){
     }
     return response;
   }catch(error){
+    console.warn('Card image request failed; trying the next image candidate.',error);
     return Response.error();
   }
 }
@@ -45,6 +46,7 @@ async function networkFirst(request,url){
     }
     return response;
   }catch(error){
+    console.warn('Network request failed; using the offline cache.',error);
     return caches.match(request);
   }
 }

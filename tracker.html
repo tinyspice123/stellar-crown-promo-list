@@ -439,21 +439,39 @@ function buildGroupSel(){
 // ---- collapsible groups (state kept per set) ----
 const COLLAPSE_KEY='collapse:'+SET_ID;
 const VIEW_KEY='view-mode';
+let storageWarningShown=false;
+function noteStorageFailure(operation,error){
+  if(storageWarningShown) return;
+  storageWarningShown=true;
+  console.warn(`Browser storage ${operation} failed; preferences will last only for this page.`,error);
+}
 function storageGet(key){
   try{ return localStorage.getItem(key); }
-  catch(error){ return null; } // storage can be disabled in private/restricted browsers
+  catch(error){
+    noteStorageFailure('read',error);
+    return null;
+  }
 }
 function storageSet(key,value){
   try{ localStorage.setItem(key,value); return true; }
-  catch(error){ return false; }
+  catch(error){
+    noteStorageFailure('write',error);
+    return false;
+  }
 }
 function storageRemove(key){
   try{ localStorage.removeItem(key); return true; }
-  catch(error){ return false; }
+  catch(error){
+    noteStorageFailure('delete',error);
+    return false;
+  }
 }
 let collapsed=new Set();
 try{ collapsed=new Set(JSON.parse(storageGet(COLLAPSE_KEY)||'[]')); }
-catch(error){ collapsed=new Set(); }
+catch(error){
+  console.warn('Ignoring malformed saved group state.',error);
+  collapsed=new Set();
+}
 const savedView=storageGet(VIEW_KEY);
 document.getElementById('viewSel').value=savedView==='table'?'table':'cards';
 function toggleGroup(g){

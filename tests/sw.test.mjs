@@ -15,10 +15,11 @@ class FakeCache {
   async put(request,response){ this.entries.set(this.key(request),response); }
 }
 
-let listeners, stores, deleted, fetchImpl, skipWaitingCalled, claimCalled;
+let listeners, stores, deleted, fetchImpl, skipWaitingCalled, claimCalled, warnings;
 
 function loadWorker(){
   listeners={}; stores=new Map(); deleted=[];
+  warnings=[];
   skipWaitingCalled=false; claimCalled=false;
   fetchImpl=async()=>{ throw new Error('unexpected network request'); };
 
@@ -44,6 +45,7 @@ function loadWorker(){
   };
   const context=vm.createContext({
     self, caches, URL, Response, Promise,
+    console:{warn(...args){ warnings.push(args); }},
     location:{origin:'https://tracker.test'},
     fetch(...args){ return fetchImpl(...args); },
   });
@@ -115,6 +117,7 @@ test('failed image fetch returns an error response for fallback handling',async(
   const event=fetchEvent('https://cards.test/missing.webp');
   listeners.fetch(event);
   assert.equal((await event.response).type,'error');
+  assert.match(warnings[0][0],/image request failed/i);
 });
 
 test('ordinary failed image responses are returned without caching',async()=>{
@@ -143,6 +146,7 @@ test('page requests fall back to cache offline and non-GET is ignored',async()=>
   const event=fetchEvent('https://tracker.test/index.html');
   listeners.fetch(event);
   assert.equal(await event.response,cached);
+  assert.match(warnings[0][0],/offline cache/i);
 
   const post=fetchEvent('https://tracker.test/save','POST');
   listeners.fetch(post);
