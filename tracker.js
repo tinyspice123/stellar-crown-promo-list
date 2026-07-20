@@ -298,7 +298,9 @@ function rowEl(it){
 
 const lb=document.getElementById('lightbox'), lbImg=document.getElementById('lbImg');
 let lbList=[], lbIndex=-1;
+let lbRequest=0;
 function openLightbox(it,shownSrc){
+  const request=++lbRequest;
   lbList=[...document.querySelectorAll('.imgwrap img[src]')];
   lbIndex=lbList.findIndex(im=>im.src===shownSrc);
   lb.querySelector('figure').classList.toggle('rh', /reverse\s*holo/i.test(it.variant));
@@ -306,9 +308,14 @@ function openLightbox(it,shownSrc){
   document.getElementById('lbNum').textContent=it.num;
   document.getElementById('lbVar').textContent=it.variant;
   lbImg.alt=it.card;
+  lbImg.classList.add('loading');
+  lbImg.onload=()=>{
+    if(request===lbRequest) lbImg.classList.remove('loading');
+  };
   // try the high-res scan first, fall back to the already-loaded image
   const hires=shownSrc.replace(/(\.png)$/i,'_hires$1');
   lbImg.onerror=()=>{
+    if(request!==lbRequest) return;
     lbImg.onerror=null;
     setSafeImageSource(lbImg,shownSrc,document.baseURI);
   };
@@ -319,8 +326,12 @@ function openLightbox(it,shownSrc){
   document.body.style.overflow='hidden';
 }
 function closeLightbox(){
+  lbRequest++;
   if(lb.open) lb.close();
-  lbImg.src=''; document.body.style.overflow='';
+  lbImg.onload=null; lbImg.onerror=null;
+  lbImg.classList.add('loading');
+  lbImg.removeAttribute('src');
+  document.body.style.overflow='';
 }
 lb.addEventListener('click',closeLightbox);
 lb.querySelector('.lb-close').addEventListener('click',closeLightbox);
