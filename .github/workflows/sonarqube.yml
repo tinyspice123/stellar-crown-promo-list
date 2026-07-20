@@ -63,6 +63,9 @@ jobs:
             -Dsonar.projectKey=tinyspice123_ultimate_pokemon_card_tracker
             -Dsonar.organization=tinyspice123
             -Dsonar.scm.provider=git
+            -Dsonar.sources=apps-script,scripts
+            -Dsonar.python.file.suffixes=.py
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             # Comma-separated paths to directories containing main source files.
             #-Dsonar.sources= # optional, default is project base directory
             # When you need the analysis to take place in a directory other than the one from which it was launched
