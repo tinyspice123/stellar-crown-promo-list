@@ -103,6 +103,17 @@ Download exact card variants referenced by a CSV export:
 python scripts/download_images.py path/to/sheet.csv stellar-crown
 ```
 
+If card/variant wording changes later, synchronize the existing manifest keys
+without downloading the images again:
+
+```bash
+python scripts/sync_manifest.py path/to/sheet.csv stellar-crown
+```
+
+Use `--check` to report drift without editing the manifest. Cosmetic case and
+punctuation changes are already ignored by runtime lookup; the sync command
+handles unambiguous wording changes and refuses uncertain matches.
+
 That command writes images and a lookup manifest to
 `public/img/stellar-crown/`. Commit both the images and `manifest.txt`.
 An Image URL in the sheet takes priority over the local file, followed by the

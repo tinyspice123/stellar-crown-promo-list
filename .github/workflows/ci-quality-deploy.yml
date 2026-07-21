@@ -97,7 +97,8 @@ jobs:
           scripts/backup_sheets.py \
           scripts/check_logos.py \
           scripts/sets_js.py \
-          scripts/validate_data.py
+          scripts/validate_data.py \
+          scripts/sync_manifest.py
 
       - name: Validate collection backups and image manifests
         run: python scripts/validate_data.py

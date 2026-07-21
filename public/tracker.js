@@ -99,7 +99,7 @@ async function loadImgManifest(){
       const parts=line.split('|');
       if(parts.length>=4){ // card|number|variant|filename
         const file=parts.at(-1);
-        imgMap.set(parts.slice(0,-1).join('|'), file);
+        imgMap.set(manifestKey(parts[0],parts[1],parts.slice(2,-1).join('|')), file);
       }
     });
   }catch{ /* the image manifest is optional; a missing or unparseable one is fine */ }

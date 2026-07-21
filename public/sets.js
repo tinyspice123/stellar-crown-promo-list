@@ -34,49 +34,49 @@ const SETS = {
 
   "paldea-evolved": {          // Jun 2023
     name: "Paldea Evolved",
-//    sheetGid: "PASTE_TAB_GID",
+   sheetGid: "2027393009",
     tcgSet: "sv2",
   },
 
   "obsidian-flames": {         // Aug 2023
     name: "Obsidian Flames",
-//    sheetGid: "PASTE_TAB_GID",
+//    sheetGid: "39019753",
     tcgSet: "sv3",
   },
 
   "pokemon-151": {                     // Sep 2023 · special set (no reverse holos; Poké Ball / Master Ball foils instead)
     name: "151",
-//    sheetGid: "PASTE_TAB_GID",
+//    sheetGid: "1515120620",
     tcgSet: "sv3pt5",
   },
 
   "paradox-rift": {            // Nov 2023
     name: "Paradox Rift",
-//    sheetGid: "PASTE_TAB_GID",
+//    sheetGid: "1785181060",
     tcgSet: "sv4",
   },
 
   "paldean-fates": {           // Jan 2024 · special set (shiny Pokémon)
     name: "Paldean Fates",
- //   sheetGid: "PASTE_TAB_GID",
+ //   sheetGid: "1416771791",
     tcgSet: "sv4pt5",
   },
 
   "temporal-forces": {         // Mar 2024
     name: "Temporal Forces",
-//    sheetGid: "PASTE_TAB_GID",
+//    sheetGid: "27323771",
     tcgSet: "sv5",
   },
 
   "twilight-masquerade": {     // May 2024
     name: "Twilight Masquerade",
-//    sheetGid: "PASTE_TAB_GID",
+//    sheetGid: "60428636",
     tcgSet: "sv6",
   },
 
   "shrouded-fable": {          // Aug 2024 · special set
     name: "Shrouded Fable",
-//    sheetGid: "PASTE_TAB_GID",
+//    sheetGid: "269046513",
     tcgSet: "sv6pt5",
   },
 
@@ -89,13 +89,13 @@ const SETS = {
 
   "surging-sparks": {          // Nov 2024
     name: "Surging Sparks",
-  //  sheetGid: "PASTE_TAB_GID",
+  //  sheetGid: "337322374",
     tcgSet: "sv8",
   },
 
   "prismatic-evolutions": {    // Jan 2025 · special set (Eeveelutions; Poké Ball / Master Ball foils)
     name: "Prismatic Evolutions",
- //   sheetGid: "PASTE_TAB_GID",
+ //   sheetGid: "615856191",
     tcgSet: "sv8pt5",
   },
 
@@ -104,28 +104,28 @@ const SETS = {
 
   "journey-together": {        // Mar 2025
     name: "Journey Together",
-   // sheetGid: "PASTE_TAB_GID",
+   // sheetGid: "779986776",
     tcgSet: "sv9",
     tcgdexSet: "sv09",
   },
 
   "destined-rivals": {         // May 2025
     name: "Destined Rivals",
- //   sheetGid: "PASTE_TAB_GID",
+ //   sheetGid: "217413449",
     tcgSet: "sv10",
     tcgdexSet: "sv10",
   },
 
   "black-bolt": {              // Jul 2025 · special set (paired with White Flare)
     name: "Black Bolt",
- //   sheetGid: "PASTE_TAB_GID",
+ //   sheetGid: "880239600",
     tcgSet: "zsv10pt5",        // VERIFY — open images.pokemontcg.io/zsv10pt5/logo.png
     tcgdexSet: "sv10.5b",      // VERIFY on tcgdex.net
   },
 
   "white-flare": {             // Jul 2025 · special set (paired with Black Bolt)
     name: "White Flare",
- //   sheetGid: "PASTE_TAB_GID",
+ //   sheetGid: "210774537",
     tcgSet: "rsv10pt5",        // VERIFY — open images.pokemontcg.io/rsv10pt5/logo.png
     tcgdexSet: "sv10.5w",      // VERIFY on tcgdex.net
   },
@@ -137,21 +137,21 @@ const SETS = {
   "mega-evolution": {          // Sep 2025
     name: "Mega Evolution",
     code: "ME01",
-  //  sheetGid: "PASTE_TAB_GID",
+  //  sheetGid: "1307332424",
     tcgdexSet: "me01",
   },
 
   "phantasmal-flames": {       // Nov 2025
     name: "Phantasmal Flames",
     code: "ME02",
-   // sheetGid: "PASTE_TAB_GID",
+   // sheetGid: "686865005",
     tcgdexSet: "me02",
   },
 
   "ascended-heroes": {         // Jan 2026 · special set
     name: "Ascended Heroes",
     code: "ME02.5",
- //   sheetGid: "PASTE_TAB_GID",
+ //   sheetGid: "1197270292",
     tcgdexSet: "me02.5",       // VERIFY on tcgdex.net
   },
 
@@ -166,14 +166,14 @@ const SETS = {
   "chaos-rising": {
     name: "Chaos Rising",
     code: "ME04",
-  //  sheetGid: "PASTE_TAB_GID",
+  //  sheetGid: "951588215",
     tcgdexSet: "me04",       // VERIFY on tcgdex.net
   },
 
   "pitch-black": {
     name: "Pitch Black",
     code: "ME05",
-  //  sheetGid: "PASTE_TAB_GID",
+  //  sheetGid: "1809096743",
     tcgdexSet: "me05",       // VERIFY on tcgdex.net
   },
 

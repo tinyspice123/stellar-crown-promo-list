@@ -56,9 +56,12 @@ but does not validate its contents.
    `public/img/<set-id>/manifest.txt`; matching is exact apart from case.
 2. Correct the sheet wording or regenerate overrides with
    `scripts/download_images.py`.
-3. Run `python scripts/validate_data.py`. It detects missing files, duplicate or
+3. If only labels changed, run
+   `python scripts/sync_manifest.py path/to/sheet.csv <set-id>` to re-key the
+   existing images without downloading them again.
+4. Run `python scripts/validate_data.py`. It detects missing files, duplicate or
    stale mappings, unsafe filenames, and unreferenced images.
-4. Open the affected card in both card and table views after deployment.
+5. Open the affected card in both card and table views after deployment.
 
 ## Clear a stale browser release
 

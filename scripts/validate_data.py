@@ -22,7 +22,14 @@ IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".svg"}
 
 def normalized_key(card: str, number: str, variant: str) -> str:
     """Return the same logical identity used by the image manifest."""
-    return "|".join(part.strip().casefold() for part in (card, number, variant))
+    stable_number = number.split("(", 1)[0]
+    return "|".join(canonical_manifest_text(part)
+                    for part in (card, stable_number, variant))
+
+
+def canonical_manifest_text(value: str) -> str:
+    """Ignore cosmetic case, whitespace and punctuation in manifest keys."""
+    return " ".join("".join(char if char.isalnum() else " " for char in value.casefold()).split())
 
 
 def find_column(header: list[str], *needles: str) -> int | None:
@@ -105,7 +112,7 @@ def parse_manifest_line(path: Path, line_number: int, raw: str):
     if len(parts) < 4:
         return "", "", [f"{path}:{line_number}: expected card|number|variant|filename"]
     filename = parts[-1].strip()
-    identity = "|".join(part.strip().casefold() for part in parts[:-1])
+    identity = normalized_key(parts[0], parts[1], "|".join(parts[2:-1]))
     return identity, filename, []
 
 

@@ -102,6 +102,18 @@ function tcgdexBaseFor(cfg){
   return s ? `https://assets.tcgdex.net/en/${s[0].toLowerCase()}/${cfg.tcgdexSet}` : null;
 }
 
+// Stable manifest identity: cosmetic punctuation/case edits in a sheet should
+// not disconnect an exact local image. Collector annotations such as "(IR)"
+// are display text, not part of the printed card number.
+function canonicalManifestText(value){
+  return (String(value||'').normalize('NFKC').toLocaleLowerCase('en')
+    .match(/[\p{L}\p{N}]+/gu)||[]).join(' ');
+}
+function manifestKey(card,number,variant){
+  const stableNumber=String(number||'').split('(')[0];
+  return [card,stableNumber,variant].map(canonicalManifestText).join('|');
+}
+
 // Ordered list of image URLs to try for a card: sheet Image column, local
 // img/<setId>/ copy, imgTemplate, pokemontcg.io, TCGdex (both paddings),
 // then an SVP promo lookup. Callers render the first URL and fall back
@@ -109,7 +121,7 @@ function tcgdexBaseFor(cfg){
 function imgCandidatesPure(it, cfg, setId, imgMap){
   const out=[];
   if(it.img && /^https?:\/\//i.test(it.img)) out.push(it.img);
-  const localFile = imgMap ? imgMap.get(`${it.card}|${it.num}|${it.variant}`) : null;
+  const localFile = imgMap ? imgMap.get(manifestKey(it.card,it.num,it.variant)) : null;
   if(localFile) out.push("img/"+setId+"/"+localFile);
   const m=it.num.match(/^(\d+)\s*\//);   // any NNN/MMM number
   const p=it.num.match(/^SVP\s*(\d+)/i);
@@ -226,6 +238,7 @@ function marketplaceSearchUrls(it,cardmarketSet=''){
 if(typeof module!=="undefined" && module.exports){
   module.exports={
     csvToRows,priceMid,parseHaveQty,detectColumns,rowsToItems,imgCandidatesPure,
+    canonicalManifestText,manifestKey,
     esc,safeImageUrl,setSafeImageSource,sortItems,exportText,exportCsv,csvEscape,
     marketplaceSearchUrls
   };

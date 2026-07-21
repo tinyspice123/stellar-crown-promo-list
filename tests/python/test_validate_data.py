@@ -34,7 +34,7 @@ class SheetValidationTests(unittest.TestCase):
         ])
         errors, keys = validate_sheet(path)
         self.assertEqual(errors, [])
-        self.assertEqual(keys, {"pikachu|025/102|unlimited"})
+        self.assertEqual(keys, {"pikachu|025 102|unlimited"})
 
     def test_duplicate_missing_number_and_bad_quantity_are_reported(self):
         path = self.write_sheet([

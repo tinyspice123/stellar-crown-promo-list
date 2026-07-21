@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
        esc, safeImageUrl, setSafeImageSource, sortItems, exportText, exportCsv,
-       csvEscape, marketplaceSearchUrls} = require('../../public/lib.js');
+       csvEscape, marketplaceSearchUrls, manifestKey} = require('../../public/lib.js');
 
 test('csvToRows: simple rows', () => {
   assert.deepStrictEqual(csvToRows('a,b\n1,2'), [['a','b'],['1','2']]);
@@ -83,8 +83,13 @@ test('imgCandidatesPure: local manifest file beats API candidates', () => {
   const cfg = {tcgSet:'sv7', tcgdexSet:'me03', promoSet:'svp'};
   const it = {card:'Crispin', num:'133/142', variant:'Regular', img:''};
   const withLocal = imgCandidatesPure(it, cfg, 'stellar-crown',
-    new Map([['Crispin|133/142|Regular','crispin_133_abc.jpg']]));
+    new Map([[manifestKey('Crispin','133/142','Regular'),'crispin_133_abc.jpg']]));
   assert.equal(withLocal[0], 'img/stellar-crown/crispin_133_abc.jpg');
+});
+test('manifestKey tolerates cosmetic sheet edits and number annotations', () => {
+  assert.equal(
+    manifestKey('Raging Bolt','111/142','Play! stamp - Non-holo'),
+    manifestKey('raging bolt','111/142 (promo)','Play stamp Non holo'));
 });
 test('imgCandidatesPure: tcgdex tries both zero-padded and bare number', () => {
   const it = {card:'Crispin', num:'7/142', variant:'Regular', img:''};
