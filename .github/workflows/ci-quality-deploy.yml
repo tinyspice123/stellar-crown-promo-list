@@ -177,8 +177,9 @@ jobs:
 
       - name: Analyze with SonarQube
         id: sonar-attempt-1
-        # SonarCloud occasionally returns a transient 504 while creating an
-        # analysis. Permit one retry below; the final attempt still blocks CI.
+        # SonarCloud occasionally returns a transient 5xx while creating or
+        # loading an analysis. Permit one backed-off retry below; the final
+        # attempt still blocks CI.
         continue-on-error: true
         # v8.2.1, pinned to prevent a mutable tag from changing CI code.
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
@@ -196,6 +197,10 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
+
+      - name: Back off before SonarQube retry
+        if: steps.sonar-attempt-1.outcome == 'failure'
+        run: sleep 60
 
       - name: Retry SonarQube analysis once
         if: steps.sonar-attempt-1.outcome == 'failure'
