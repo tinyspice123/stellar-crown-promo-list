@@ -21,13 +21,21 @@ const ids = Object.keys(SETS);
 if (ids.length === 0) fail('no sets defined'); else ok(ids.length + ' active set(s)');
 
 const allowedSetFields = new Set([
-  'name', 'sheet', 'tcgSet', 'tcgdexSet', 'code', 'logo',
+  'name', 'sheet', 'sheetGid', 'tcgSet', 'tcgdexSet', 'code', 'logo',
   'eyebrow', 'subtitle', 'imgTemplate', 'promoSet', 'cardmarketSet',
+  'cardmarketUrl', 'homeGroup',
 ]);
+const allowedHomeGroups = new Set(['sv', 'mega', 'misc']);
 for (const [id, cfg] of Object.entries(SETS)) {
   if (/^\d+$/.test(id)) fail(`key "${id}" is purely numeric - JS reorders these; rename it`);
   if (!/^[a-z0-9-]+$/.test(id)) fail(`key "${id}" is not kebab-case (lowercase letters, digits, hyphens only) - rename it to match the other set ids`);
   if (!cfg.name) fail(`"${id}" has no name`);
+  if (!cfg.cardmarketSet && !cfg.cardmarketUrl)
+    fail(`"${id}" has no Cardmarket set code or collection URL`);
+  if (cfg.cardmarketUrl && !/^https:\/\/www\.cardmarket\.com\/en\/Pokemon\/Species\/[A-Za-z0-9-]+$/.test(cfg.cardmarketUrl))
+    fail(`"${id}" has an invalid Cardmarket collection URL`);
+  if (!allowedHomeGroups.has(cfg.homeGroup))
+    fail(`"${id}" has an invalid or missing homeGroup`);
   for (const [field, value] of Object.entries(cfg)) {
     if (!allowedSetFields.has(field))
       fail(`"${id}" has unknown field "${field}" - possible typo`);
@@ -35,7 +43,11 @@ for (const [id, cfg] of Object.entries(SETS)) {
       fail(`"${id}.${field}" must be a string`);
   }
   if (cfg.sheet && !/output=csv/.test(cfg.sheet)) fail(`"${id}" sheet link is not a CSV publish link`);
-  if (cfg.sheet && /PASTE_TAB_GID/.test(cfg.sheet)) fail(`"${id}" still contains PASTE_TAB_GID - comment the sheet line out or paste the real gid`);
+  if (cfg.sheetGid && !/^\d+$/.test(cfg.sheetGid)) fail(`"${id}" sheetGid must contain digits only`);
+  if (cfg.sheetGid && !cfg.sheet?.includes(`gid=${cfg.sheetGid}&`))
+    fail(`"${id}" generated sheet URL does not contain its sheetGid`);
+  if (!fs.existsSync(sitePath(path.join('img', id, 'manifest.txt'))))
+    fail(`"${id}" has no image manifest`);
 }
 const gids = Object.entries(SETS).flatMap(([id, c]) => {
   const m = (c.sheet || '').match(/gid=(\d+)/); return m ? [[id, m[1]]] : [];
@@ -54,8 +66,23 @@ if (!workflow.includes('-Dsonar.qualitygate.wait=true'))
   fail('SonarQube analysis does not wait for the Quality Gate');
 else ok('SonarQube Quality Gate blocks the analysis job');
 
+const workflowFiles = fs.readdirSync('.github/workflows')
+  .filter(file => file.endsWith('.yml'));
+for (const file of workflowFiles) {
+  const source = fs.readFileSync(path.join('.github/workflows', file), 'utf8');
+  const unpinned = [...source.matchAll(/uses:\s+([^\s@]+)@([^\s#]+)/g)]
+    .filter(match => !/^[0-9a-f]{40}$/.test(match[2]));
+  for (const match of unpinned) fail(`${file}: action ${match[1]} is not pinned to a commit SHA`);
+}
+if (!failures) ok('GitHub Actions are pinned to commit SHAs');
+
+const renovate = JSON.parse(fs.readFileSync('.github/renovate.json', 'utf8'));
+if (!(renovate.extends || []).includes('helpers:pinGitHubActionDigests'))
+  fail('Renovate is not configured to maintain pinned GitHub Action digests');
+else ok('Renovate tracks pinned GitHub Actions');
+
 // ---------- HTML pages ----------
-for (const file of ['index.html', 'tracker.html']) {
+for (const file of ['index.html', 'tracker.html', '404.html']) {
   console.log(file);
   const html = fs.readFileSync(sitePath(file), 'utf8');
 
@@ -89,13 +116,26 @@ for (const file of ['index.html', 'tracker.html']) {
 
   const requiredIds = file === 'index.html'
     ? ['sets', 'setSearch', 'noResults']
-    : ['setLogo', 'eyebrowText', 'titleFallback', 'groupSel', 'missOnly', 'sortSel', 'viewSel', 'lightbox', 'notice', 'exportMissing', 'exportOwned'];
+    : file === 'tracker.html'
+      ? ['setLogo', 'eyebrowText', 'titleFallback', 'groupSel', 'missOnly', 'sortSel', 'viewSel', 'lightbox', 'notice', 'exportMissing', 'exportOwned']
+      : [];
   let missing = false;
   for (const id of requiredIds) {
     if (!html.includes(`id="${id}"`)) { fail(`missing element id="${id}"`); missing = true; }
   }
   if (!missing) ok('required element ids present');
 }
+
+const indexHtml = fs.readFileSync(sitePath('index.html'), 'utf8');
+for (const marker of ['name="description"', 'rel="canonical"', 'property="og:title"']) {
+  if (!indexHtml.includes(marker)) fail(`index.html missing metadata ${marker}`);
+}
+for (const file of ['404.html', 'robots.txt', 'sitemap.xml']) {
+  if (!fs.existsSync(sitePath(file))) fail('missing production file ' + file);
+}
+if (!fs.readFileSync(sitePath('robots.txt'), 'utf8').includes('sitemap.xml'))
+  fail('robots.txt does not advertise sitemap.xml');
+else ok('production metadata and crawler files present');
 
 // ---------- local JavaScript ----------
 for (const file of ['lib.js', 'index.js', 'tracker.js']) {
@@ -109,7 +149,7 @@ for (const file of ['index.html', 'tracker.html']) {
 
 // ---------- PWA files ----------
 console.log('pwa');
-for (const f of ['manifest.json', 'sw.js', 'assets/icon-192.png', 'assets/icon-512.png']) {
+for (const f of ['manifest.json', 'sw.js', '404.html', 'assets/icon-192.png', 'assets/icon-512.png']) {
   if (!fs.existsSync(sitePath(f))) fail('missing ' + f);
 }
 try { JSON.parse(fs.readFileSync(sitePath('manifest.json'), 'utf8')); ok('manifest.json is valid JSON'); }

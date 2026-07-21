@@ -1,62 +1,61 @@
 Lapras|031/142|7-Eleven stamp|lapras_031_4c6cc9.jpg
-Archaludon|107/142|Galaxy holo + EB Games stamp|archaludon_107_da60d5.jpg
-Archaludon|107/142|Play! stamp - Cosmos holo|archaludon_107_ae74ef.jpg
-Raging Bolt|111/142|Play! stamp - Non-holo|raging_bolt_111_fce555.jpg
-Noctowl|115/142|Play! stamp - Cosmos holo|noctowl_115_394659.jpg
-Noctowl|115/142|Play! stamp - Non-holo|noctowl_115_fefd1e.jpg
-Fan Rotom|118/142|Premier Ball League promo|fan_rotom_118_c4306a.jpg
-Fan Rotom|118/142|Premier Ball League JUDGE promo|fan_rotom_118_c42c70.jpg
-Fan Rotom|118/142|Play! stamp - Cosmos holo|fan_rotom_118_7ff8f1.jpg
-Terapagos ex|128/142|Premier Ball League promo|terapagos_ex_128_9b9e1a.jpg
-Area Zero Underdepths|131/142|Play! stamp - Cosmos holo|area_zero_underdepths_131_fb192b.jpg
-Melmetal|104/142|Cosmos holo (unstamped)|melmetal_104_c6df27.jpg
-Archaludon|107/142|Cosmos holo (unstamped)|archaludon_107_60ab43.jpg
+Archaludon|107/142|EB games stamp|archaludon_107_da60d5.jpg
+Archaludon|107/142|Play stamp Cosmos holo|archaludon_107_ae74ef.jpg
+Raging Bolt|111/142|Play stamp Non holo|raging_bolt_111_fce555.jpg
+Noctowl|115/142|Play stamp Cosmos holo|noctowl_115_394659.jpg
+Noctowl|115/142|Play stamp Non holo|noctowl_115_fefd1e.jpg
+Fan Rotom|118/142|Premier Ball|fan_rotom_118_c4306a.jpg
+Fan Rotom|118/142|Premier Ball judge|fan_rotom_118_c42c70.jpg
+Fan Rotom|118/142|Play stamp Cosmos holo|fan_rotom_118_7ff8f1.jpg
+Area Zero Underdepths|131/142|Play stamp Cosmos holo|area_zero_underdepths_131_fb192b.jpg
+Melmetal|104/142|Cosmos holo|melmetal_104_c6df27.jpg
+Archaludon|107/142|Cosmos holo|archaludon_107_60ab43.jpg
 Glass Trumpet|135/142|Pokemon TCG Gym stamp|glass_trumpet_135_931df2.jpg
-Meltan|102/142|Cosmos holo + Stellar Crown stamp|meltan_102_08bcc2.jpg
-Briar|132/142|Regionals promo - red logo|briar_132_c6efa2.jpg
-Briar|132/142|Regionals STAFF - orange logo|briar_132_aabc06.jpg
-Briar|132/142|Regionals STAFF - red logo|briar_132_c5b111.jpg
+Meltan|102/142|Cosmos holo stellar crown stamp|meltan_102_08bcc2.jpg
+Briar|132/142|Regionals promo red logo|briar_132_c6efa2.jpg
+Briar|132/142|Regionals promo orange logo staff|briar_132_aabc06.jpg
+Briar|132/142|Regionals promo red logo staff|briar_132_c5b111.jpg
 Area Zero Underdepths|131/142|Pokemon TCG Gym stamp|area_zero_underdepths_131_a371c6.jpg
-Bouffalant|119/142|Play! stamp - Cosmos holo|bouffalant_119_d65e20.jpg
+Bouffalant|119/142|Play stamp Cosmos holo|bouffalant_119_d65e20.jpg
 Crispin|133/142|Pokemon TCG Gym stamp|crispin_133_1ac5f0.jpg
-Grimmsnarl|096/142|Non-holo (holo-only in boosters)|grimmsnarl_096_24d2e8.png
-Rhyperior|076/142|Cosmos holo (unstamped)|rhyperior_076_dd6bb5.jpg
-Glass Trumpet|135/142|Play! stamp - Reverse holo|glass_trumpet_135_d97103.jpg
-Drifblim|SVP 135|SVP promo STAFF stamp|drifblim_svp135_e6f08d.jpg
+Grimmsnarl|096/142|Non holo|grimmsnarl_096_24d2e8.png
+Rhyperior|076/142|Cosmos holo|rhyperior_076_dd6bb5.jpg
+Glass Trumpet|135/142|Play stamp Reverse holo|glass_trumpet_135_d97103.jpg
+Drifblim|SVP 135|Stellar crown stamp staff promo|drifblim_svp135_e6f08d.jpg
 Glass Trumpet|135/142|Asia Championship stamp|glass_trumpet_135_c67b09.webp
 Kofu|166/142|Professor program stamped|kofu_166_cbdd21.jpeg
-Terapagos ex|128/142|Play! stamp - Holo (Some left some right stamp)|terapagos_ex_128_810941.jpg
-Ledian|SVP 133|SVP promo STAFF stamp|ledian_svp133_5d53e1.jpg
-Bouffalant|119/142|Play! stamp - Non-holo|bouffalant_119_26855c.jpg
-Grand Tree|136/142|Play! stamp - Foil|grand_tree_136_ea9e38.jpg
-Crispin|133/142|Play! stamp - Non-holo|crispin_133_436937.jpg
+Terapagos ex|128/142|Play stamp Holo|terapagos_ex_128_810941.jpg
+Ledian|SVP 133|Stellar crown stamp staff promo|ledian_svp133_5d53e1.jpg
+Bouffalant|119/142|Play stamp Non holo|bouffalant_119_26855c.jpg
+Grand Tree|136/142|Play stamp Holo|grand_tree_136_ea9e38.jpg
+Crispin|133/142|Play stamp Non holo|crispin_133_436937.jpg
 Zeraora|159/SV-P|Set Kolektor stamp|zeraora_159_db42c7.jpg
 Noctowl|SVP 141|Pokemon Center stamp|noctowl_svp141_323d74.jpg
-Crabominable|SVP 134|SVP promo STAFF stamp|crabominable_svp134_6d3519.jpg
-Joltik|050/142|Play! stamp - Cosmos holo|joltik_050_21f9e9.jpg
-Bouffalant|SVP 136|SVP promo STAFF stamp|bouffalant_svp136_05cc41.jpg
+Crabominable|SVP 134|Stellar crown stamp staff promo|crabominable_svp134_6d3519.jpg
+Joltik|050/142|Play stamp Cosmos holo|joltik_050_21f9e9.jpg
+Bouffalant|SVP 136|Stellar crown stamp staff promo|bouffalant_svp136_05cc41.jpg
 Archaludon|107/142|Pokemon TCG Gym stamp|archaludon_107_896511.jpg
-Terapagos ex|128/142|Play! stamp - Non-holo|terapagos_ex_128_37334b.jpg
-terapagos_ex|128/142|Premier Ball League promo|terapagos_ex_128_049f3d.jpg
-Melmetal ex|105/142|Stamped promo|melmetal_ex_105_a17270.jpg
-Reshiram|022/142|Cosmos holo + Stellar Crown stamp|reshiram_022_be76cb.jpg
-Klinklang|101/142|Cosmos holo (unstamped)|klinklang_101_22827b.jpg
-Archaludon|107/142|Cosmos holo + Stellar Crown logo stamp|archaludon_107_76b32f.jpg
-Briar|132/142|Regionals promo - orange logo|briar_132_21c3e8.jpg
-Venusaur ex|001/142|Stellar Crown logo stamp|venusaur_ex_001_f8739b.jpg
-Sparkling Crystal|142/142|Play! stamp - Foil|sparkling_crystal_142_b33ccd.jpg
-Galvantula ex|051/142|Play! stamp - Holo (ex foil)|galvantula_ex_051_425693.jpg
-Glass Trumpet|135/142|Play! stamp - Non-holo|glass_trumpet_135_bad751.jpg
-Ledian|003/142|Play! stamp - Non-holo|ledian_003_a61f9d.jpg
-Area Zero Underdepths|131/142|Play! stamp - Non-holo|area_zero_underdepths_131_7a4d67.jpg
-Raging Bolt|111/142|Galaxy holo + Stellar Crown logo stamp|raging_bolt_111_aa0768.jpg
-Archaludon|107/142|Galaxy holo + GameStop stamp|archaludon_107_020bf4.jpg
-Crabominable|149/142 (IR)|Holiday Calendar version|crabominable_149_854733.jpg
-Greninja ex|041/142|Stellar Crown logo stamp|greninja_ex_041_5b51b4.jpg
-Iron Boulder|071/142|Play! stamp - Non-holo|iron_boulder_071_87af78.jpg
-Archaludon|107/142|Play! stamp - Non-holo|archaludon_107_540806.png
-Briar|132/142|Play! stamp - Cosmos holo|briar_132_311140.jpg
-Iron Boulder|071/142|Play! stamp - Cosmos holo|iron_boulder_071_1ec194.jpg
-Glass Trumpet|135/142|Play! stamp - Cosmos holo|glass_trumpet_135_4918f2.jpg
-Crispin|133/142|Play! stamp - Cosmos holo|crispin_133_175984.jpg
-Blastoise ex|030/142|Stellar Crown logo stamp|blastoise_ex_030_592451.jpg
+Terapagos ex|128/142|Play stamp Non holo|terapagos_ex_128_37334b.jpg
+Terapagos ex|128/142|Premier Ball League promo|terapagos_ex_128_049f3d.jpg
+Melmetal ex|105/142|Stellar crown stamp|melmetal_ex_105_a17270.jpg
+Reshiram|022/142|Cosmos holo stellar crown stamp|reshiram_022_be76cb.jpg
+Klinklang|101/142|Cosmos holo|klinklang_101_22827b.jpg
+Archaludon|107/142|Stellar crown stamp|archaludon_107_76b32f.jpg
+Briar|132/142|Regionals promo orange logo|briar_132_21c3e8.jpg
+Venusaur ex|001/142|Stellar crown stamp|venusaur_ex_001_f8739b.jpg
+Sparkling Crystal|142/142|Play stamp Holo|sparkling_crystal_142_b33ccd.jpg
+Galvantula ex|051/142|Play stamp Holo|galvantula_ex_051_425693.jpg
+Glass Trumpet|135/142|Play stamp Non holo|glass_trumpet_135_bad751.jpg
+Ledian|003/142|Play stamp Non holo|ledian_003_a61f9d.jpg
+Area Zero Underdepths|131/142|Play stamp Non holo|area_zero_underdepths_131_7a4d67.jpg
+Raging Bolt|111/142|Stellar crown stamp|raging_bolt_111_aa0768.jpg
+Archaludon|107/142|Gamestop stamp|archaludon_107_020bf4.jpg
+Crabominable|149/142|Holiday Calendar stamp|crabominable_149_854733.jpg
+Greninja ex|041/142|Stellar crown stamp|greninja_ex_041_5b51b4.jpg
+Iron Boulder|071/142|Play stamp Non holo|iron_boulder_071_87af78.jpg
+Archaludon|107/142|Play stamp Non holo|archaludon_107_540806.png
+Briar|132/142|Play stamp Cosmos holo|briar_132_311140.jpg
+Iron Boulder|071/142|Play stamp Cosmos holo|iron_boulder_071_1ec194.jpg
+Glass Trumpet|135/142|Play stamp Cosmos holo|glass_trumpet_135_4918f2.jpg
+Crispin|133/142|Play stamp Cosmos holo|crispin_133_175984.jpg
+Blastoise ex|030/142|Stellar crown stamp|blastoise_ex_030_592451.jpg

@@ -75,7 +75,7 @@ test('install precaches the shell and activates immediately',async()=>{
   const event=lifecycleEvent();
   listeners.install(event); await event.promise;
   assert.deepEqual(stores.get('shell-v5').precached,
-    ['./','index.html','index.css','index.js','tracker.html','tracker.css',
+    ['./','index.html','404.html','index.css','index.js','tracker.html','tracker.css',
       'tracker.js','sets.js','lib.js','manifest.json']);
   assert.equal(skipWaitingCalled,true);
 });

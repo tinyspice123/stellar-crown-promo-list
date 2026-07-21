@@ -29,7 +29,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
@@ -39,7 +39,7 @@ jobs:
             /package-lock.json
             /package.json
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -54,7 +54,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: javascript-coverage
           path: coverage/lcov.info
@@ -69,16 +69,18 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/
             /tests/
+            /backups/
             /requirements-dev.txt
             /public/sets.js
+            /public/img/
 
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.14"
           cache: pip
@@ -94,7 +96,12 @@ jobs:
           scripts/download_assets.py \
           scripts/backup_sheets.py \
           scripts/check_logos.py \
-          scripts/sets_js.py
+          scripts/sets_js.py \
+          scripts/validate_data.py \
+          scripts/sync_manifest.py
+
+      - name: Validate collection backups and image manifests
+        run: python scripts/validate_data.py
 
       - name: Unit tests with coverage
         run: |
@@ -102,7 +109,7 @@ jobs:
           python -m coverage xml -o coverage.xml
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: python-coverage
           path: coverage.xml
@@ -121,7 +128,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           sparse-checkout-cone-mode: false
@@ -136,7 +143,7 @@ jobs:
             /requirements-dev.txt
             /sonar-project.properties
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -149,7 +156,7 @@ jobs:
 
       - name: Upload Playwright failure details
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-failure
           path: test-results/
@@ -157,20 +164,48 @@ jobs:
           retention-days: 7
 
       - name: Download JavaScript coverage
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: javascript-coverage
           path: coverage
 
       - name: Download Python coverage
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: python-coverage
           path: .
 
       - name: Analyze with SonarQube
+        id: sonar-attempt-1
+        # SonarCloud occasionally returns a transient 5xx while creating or
+        # loading an analysis. Permit one backed-off retry below; the final
+        # attempt still blocks CI.
+        continue-on-error: true
         # v8.2.1, pinned to prevent a mutable tag from changing CI code.
-        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=tinyspice123_ultimate_pokemon_card_tracker
+            -Dsonar.organization=tinyspice123
+            -Dsonar.scm.provider=git
+            -Dsonar.python.file.suffixes=.py
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Back off before SonarQube retry
+        if: steps.sonar-attempt-1.outcome == 'failure'
+        run: sleep 60
+
+      - name: Retry SonarQube analysis once
+        if: steps.sonar-attempt-1.outcome == 'failure'
+        # v8.2.1, pinned to prevent a mutable tag from changing CI code.
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -189,7 +224,7 @@ jobs:
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         # v5, pinned because this step is part of the trusted deployment path.
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: 'public'
 
@@ -218,11 +253,11 @@ jobs:
 
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
 
       - name: Smoke test deployed site
         env:

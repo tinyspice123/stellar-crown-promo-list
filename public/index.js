@@ -1,4 +1,26 @@
 const main=document.getElementById('sets');
+const HOME_GROUPS={
+  sv:"Scarlet & Violet",
+  mega:"Mega Evolution Era",
+  misc:"Mew & Miscellaneous",
+};
+const groupGrids=new Map();
+
+function groupGrid(key){
+  const safeKey=Object.hasOwn(HOME_GROUPS,key)?key:'misc';
+  if(groupGrids.has(safeKey)) return groupGrids.get(safeKey);
+  const section=document.createElement('section');
+  section.className='setgroup';
+  section.dataset.group=safeKey;
+  const heading=document.createElement('h2');
+  heading.textContent=HOME_GROUPS[safeKey];
+  const grid=document.createElement('div');
+  grid.className='sets';
+  section.append(heading,grid);
+  main.appendChild(section);
+  groupGrids.set(safeKey,grid);
+  return grid;
+}
 
 async function progress(cfg){
   if(!cfg.sheet) return null;
@@ -71,7 +93,7 @@ Object.entries(SETS).forEach(([id,cfg])=>{
   });
   setSafeImageSource(logoImg,logoCands[0]||'',document.baseURI);
   a.dataset.search=(id+" "+cfg.name+" "+(cfg.tcgSet||"")+" "+(cfg.code||"")+" "+(cfg.tcgdexSet||"")).toLowerCase();
-  main.appendChild(a);
+  groupGrid(cfg.homeGroup||'misc').appendChild(a);
   if(!cfg.sheet){
     a.querySelector('[data-prog]').textContent='Not configured';
   } else {
@@ -92,6 +114,9 @@ document.getElementById('setSearch').addEventListener('input', e=>{
     const hit=!q || card.dataset.search.includes(q);
     card.classList.toggle('hidden', !hit);
     if(hit) visible++;
+  });
+  document.querySelectorAll('.setgroup').forEach(group=>{
+    group.classList.toggle('hidden', !group.querySelector('.setcard:not(.hidden)'));
   });
   document.getElementById('noResults').style.display = visible? 'none':'block';
 });

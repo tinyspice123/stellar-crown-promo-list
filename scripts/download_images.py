@@ -14,12 +14,11 @@ This will:
   - Read all Image column URLs from the CSV
   - Download each to img/[filename]
   - Create img/manifest.txt mapping card|number|variant→filename
-  - Update index.html to use the local images
 
 The tracker will now check:
   1. Image column URL (from sheet)
-  2. img/[filename] (local cache)
-  3. pokemontcg.io (fallback)
+  2. img/[filename] from the generated manifest (local override)
+  3. Configured card-image APIs (fallback)
 """
 
 import re

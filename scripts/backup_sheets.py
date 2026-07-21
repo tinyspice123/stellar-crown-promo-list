@@ -46,7 +46,11 @@ def backup(entries, out=Path("backups"), opener=urllib.request.urlopen):
                     validate_delivery_host(url, geturl())
             if data.lstrip().startswith("<"):
                 raise ValueError("got a web page, not CSV (tab not published?)")
-            (out / f"{sid}.csv").write_text(data, encoding="utf-8")
+            lf_data = data.replace("\r\n", "\n").replace("\r", "\n")
+            normalized_data = "\n".join(line.rstrip() for line in lf_data.split("\n"))
+            (out / f"{sid}.csv").write_text(
+                normalized_data, encoding="utf-8", newline="\n"
+            )
             print(f"  {sid}: {data.count(chr(10))} rows")
             saved += 1
         except Exception as exc:

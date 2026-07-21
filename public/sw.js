@@ -8,7 +8,7 @@ const VERSION = 'shell-v5';
 const IMAGE_CACHE = 'card-images-v1';
 const IMAGE_CACHE_LIMIT = 200;
 const SHELL = [
-  './', 'index.html', 'index.css', 'index.js',
+  './', 'index.html', '404.html', 'index.css', 'index.js',
   'tracker.html', 'tracker.css', 'tracker.js',
   'sets.js', 'lib.js', 'manifest.json'
 ];

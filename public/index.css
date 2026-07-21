@@ -26,7 +26,13 @@
   .homesearch::placeholder{color:var(--faint)}
   .homesearch:focus{border-color:var(--tera2);box-shadow:0 0 0 3px rgba(141,180,255,.12)}
   .setcard.hidden{display:none}
+  .setgroup.hidden{display:none}
   .noresults{display:none;text-align:center;color:var(--dim);font-size:14px;margin-top:8px}
+  .setgroups{max-width:900px;margin:0 auto;display:grid;gap:34px}
+  .setgroup h2{font-family:"Unbounded","Sora",sans-serif;font-size:16px;
+    letter-spacing:.04em;margin:0 2px 14px;color:var(--ink)}
+  .setgroup h2::after{content:"";display:block;width:52px;height:2px;margin-top:9px;
+    border-radius:99px;background:var(--crystal)}
   .sets{max-width:900px;margin:0 auto;display:grid;gap:18px;
     grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
   .setcard{display:block;text-decoration:none;color:var(--ink);
@@ -49,3 +55,8 @@
   .bar i{display:block;height:100%;background:var(--crystal);width:0;transition:width .6s ease}
   footer{max-width:900px;margin:44px auto 0;text-align:center;font-size:11px;color:var(--faint)}
   footer a{color:var(--dim)}
+  .errorpage{max-width:620px;margin:0 auto;text-align:center}
+  .errorpage p{color:var(--dim);font-size:15px;line-height:1.6;margin-top:12px}
+  .homebutton{display:inline-block;margin-top:24px;padding:11px 18px;border:1px solid var(--line);
+    border-radius:999px;background:var(--panel2);color:var(--ink);font-weight:700;text-decoration:none}
+  .homebutton:hover{border-color:var(--tera2);box-shadow:0 8px 24px rgba(141,180,255,.14)}

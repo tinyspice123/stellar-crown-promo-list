@@ -17,6 +17,7 @@ import re
 # finds the closing brace directly - no ambiguous backtracking, unlike a
 # lazy `.*?` spanning newlines with a multi-char terminator.
 _ENTRY_RE = re.compile(r'"([\w.\-]+)"\s*:\s*\{([^}]*)\}')
+_SHEET_BASE_RE = re.compile(r'const\s+SHEET_BASE_URL\s*=\s*"([^"]+)"')
 
 
 def _extract_fields(body):
@@ -62,10 +63,16 @@ def parse_sets(src):
     Fields that are commented out or absent are simply missing — use
     .get("field") exactly like the old per-script field() helpers.
     """
+    active_source = strip_comments(src)
+    base_match = _SHEET_BASE_RE.search(active_source)
+    sheet_base = base_match.group(1) if base_match else None
     entries = []
-    for m in _ENTRY_RE.finditer(strip_comments(src)):
+    for m in _ENTRY_RE.finditer(active_source):
         sid, body = m.group(1), m.group(2)
         fields = _extract_fields(body)
+        if sheet_base and fields.get("sheetGid"):
+            fields["sheet"] = (
+                f'{sheet_base}?gid={fields["sheetGid"]}&single=true&output=csv')
         fields["id"] = sid
         entries.append(fields)
     return entries

@@ -20,17 +20,29 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.14"
       - name: Fetch all sheets
         run: python scripts/backup_sheets.py
+      - name: Synchronize image manifests
+        shell: bash
+        run: |
+          for manifest in public/img/*/manifest.txt; do
+            set_id="$(basename "$(dirname "$manifest")")"
+            sheet="backups/$set_id.csv"
+            if [[ -f "$sheet" ]]; then
+              python scripts/sync_manifest.py "$sheet" "$set_id"
+            fi
+          done
+      - name: Validate collection backups and image manifests
+        run: python scripts/validate_data.py
       - name: Commit if changed
         run: |
           git config user.name "collection-backup[bot]"
           git config user.email "actions@github.com"
-          git add backups/
+          git add backups/ public/img/*/manifest.txt
           if git diff --cached --quiet; then
             echo "No changes since last backup"
           else
@@ -42,8 +54,8 @@ jobs:
     name: Set logo reachability
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.14"
       - name: Check every set's logo resolves

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tinyspice123.github.io/ultimate_pokemon_card_tracker/sitemap.xml

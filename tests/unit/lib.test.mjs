@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {csvToRows, priceMid, matchesQuery, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
        esc, safeImageUrl, setSafeImageSource, sortItems, exportText, exportCsv,
-       csvEscape, marketplaceSearchUrls} = require('../../public/lib.js');
+       csvEscape, marketplaceSearchUrls, manifestKey} = require('../../public/lib.js');
 
 test('csvToRows: simple rows', () => {
   assert.deepStrictEqual(csvToRows('a,b\n1,2'), [['a','b'],['1','2']]);
@@ -93,8 +93,13 @@ test('imgCandidatesPure: local manifest file beats API candidates', () => {
   const cfg = {tcgSet:'sv7', tcgdexSet:'me03', promoSet:'svp'};
   const it = {card:'Crispin', num:'133/142', variant:'Regular', img:''};
   const withLocal = imgCandidatesPure(it, cfg, 'stellar-crown',
-    new Map([['Crispin|133/142|Regular','crispin_133_abc.jpg']]));
+    new Map([[manifestKey('Crispin','133/142','Regular'),'crispin_133_abc.jpg']]));
   assert.equal(withLocal[0], 'img/stellar-crown/crispin_133_abc.jpg');
+});
+test('manifestKey tolerates cosmetic sheet edits and number annotations', () => {
+  assert.equal(
+    manifestKey('Raging Bolt','111/142','Play! stamp - Non-holo'),
+    manifestKey('raging bolt','111/142 (promo)','Play stamp Non holo'));
 });
 test('imgCandidatesPure: tcgdex tries both zero-padded and bare number', () => {
   const it = {card:'Crispin', num:'7/142', variant:'Regular', img:''};
@@ -214,5 +219,22 @@ test('marketplaceSearchUrls', async (t) => {
       {card:'Crabominable',num:'SVP 134',variant:'STAFF stamp'});
     assert.equal(new URL(urls.cardmarket).searchParams.get('searchString'),
       'Crabominable SVP 134');
+  });
+  await t.test('uses a collection-level Cardmarket page when configured', () => {
+    const species='https://www.cardmarket.com/en/Pokemon/Species/Mew';
+    const urls=marketplaceSearchUrls(
+      {card:'Mew',num:'8',variant:'Normal — English',
+        group:'Wizards Black Star Promos (1999/07/01)',
+        src:'Wizards Black Star Promos — English'}, 'MEW', species);
+    assert.equal(urls.cardmarket,species);
+    assert.equal(new URL(urls.ebay).searchParams.get('_nkw'),
+      'Mew 8 Normal — English Wizards Black Star Promos — English Pokemon card');
+  });
+  await t.test('falls back to the collection group when source is absent', () => {
+    const urls=marketplaceSearchUrls(
+      {card:'Mew ex',num:'151/165',variant:'Holofoil',group:'Pokemon 151'},
+      '', 'https://www.cardmarket.com/en/Pokemon/Species/Mew');
+    assert.equal(new URL(urls.ebay).searchParams.get('_nkw'),
+      'Mew ex 151/165 Holofoil Pokemon 151 Pokemon card');
   });
 });

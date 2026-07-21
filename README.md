@@ -39,7 +39,7 @@ the `SETS` object:
 "stellar-crown": {
   name: "Stellar Crown",
   code: "SV7",
-  sheet: "https://docs.google.com/spreadsheets/d/e/.../pub?gid=123&single=true&output=csv",
+  sheetGid: "123",
   tcgSet: "sv7",
   tcgdexSet: "sv07",
   subtitle: "English master set",
@@ -49,8 +49,9 @@ the `SETS` object:
 Rules:
 
 - Use a unique, kebab-case key such as `stellar-crown`.
-- Publish the individual Google Sheets tab as CSV, not the whole spreadsheet.
-- Make sure each configured set uses a different `gid`.
+- Publish the spreadsheet as CSV and store only the tab's numeric `sheetGid`.
+- Keep the shared publication URL in `SHEET_BASE_URL` and make sure each
+  configured set uses a different `sheetGid`.
 - `tcgSet` is the Pokémon TCG API set code; `tcgdexSet` is the TCGdex code.
 - Optional fields include `logo`, `eyebrow`, `subtitle`, `imgTemplate`,
   `promoSet`, and `cardmarketSet`.
@@ -96,16 +97,44 @@ Download or refresh all configured set logos:
 python scripts/download_assets.py
 ```
 
-Download exact card variants referenced by a CSV export:
+### Create a card-image manifest
+
+Put the correct source URL in the sheet's **Image** column, refresh the backup,
+then run the downloader with the set's `sets.js` key:
 
 ```bash
-python scripts/download_images.py path/to/sheet.csv stellar-crown
+python scripts/backup_sheets.py
+python scripts/download_images.py backups/stellar-crown.csv stellar-crown
 ```
 
-That command writes images and a lookup manifest to
-`public/img/stellar-crown/`. Commit both the images and `manifest.txt`.
-An Image URL in the sheet takes priority over the local file, followed by the
-configured API fallbacks.
+The downloader reads every row with a Card and Image URL, downloads those files
+to `public/img/<set-id>/`, and generates `manifest.txt` automatically in this
+format:
+
+```text
+Card|Number|Variant / Stamp|filename.jpg
+```
+
+It replaces that set's current manifest with the successfully downloaded rows,
+so commit the images and manifest together. Rows without an Image URL continue
+using the configured card-image APIs.
+
+If Card, Number, or Variant wording changes later, re-key the existing manifest
+without downloading the images again:
+
+```bash
+python scripts/sync_manifest.py path/to/sheet.csv stellar-crown
+```
+
+Use `--check` to report drift without editing the manifest. Cosmetic case and
+punctuation changes are already ignored by runtime lookup; the sync command
+handles unambiguous wording changes and refuses uncertain matches.
+The scheduled backup workflow runs synchronization automatically before
+validating and committing refreshed backups. It deliberately does not download
+new image files; generating and reviewing repository assets remains an explicit
+step. At runtime, a sheet Image URL takes priority, followed by its local
+manifest override and then the configured API fallbacks. Clear the sheet Image
+cell after downloading if the committed local copy should take priority.
 
 ## Back up collection data
 
@@ -117,6 +146,16 @@ python scripts/backup_sheets.py
 
 The scheduled backup workflow runs the same command weekly and commits only
 when sheet data changed.
+
+Validate every configured backup and exact-variant image mapping offline with:
+
+```bash
+python scripts/validate_data.py
+```
+
+The validator rejects malformed sheet columns, missing collector numbers,
+duplicate card variants, invalid quantities, stale manifest mappings, missing
+image files, and orphaned local images.
 
 ## Tests
 
@@ -150,6 +189,16 @@ On pushes to `main` and pull requests, GitHub Actions runs:
 5. A GitHub Pages upload of `public/` when the checks pass on `main`.
 6. Post-deployment smoke checks for the home page, tracker, manifest, and
    service worker.
+
+### Maintenance mode
+
+To replace the site temporarily with its maintenance page, open **Actions →
+Toggle maintenance mode → Run workflow**, choose `enable`, and run it. Choose
+`disable` to redeploy the current site from `public/`. A later successful normal
+deployment also replaces maintenance mode with the live site.
+
+For rollback, sheet restoration, outage and image-repair procedures, see the
+[recovery runbook](docs/RECOVERY.md).
 
 The workflow uses least-privilege job permissions. Pages deployment requires
 `pages: write` and `id-token: write`; SonarQube authentication also uses an OIDC
@@ -201,8 +250,9 @@ web and that its URL contains `output=csv`. A normal edit/share URL is not a CSV
 endpoint.
 
 **A local card image does not appear** — check that its file and manifest are in
-`public/img/<set-id>/`, and that the manifest's card, number, and variant exactly
-match the sheet. Clear the sheet's Image URL if you want the local image to win.
+`public/img/<set-id>/`. Manifest matching ignores cosmetic case and punctuation;
+for substantive label changes, run `scripts/sync_manifest.py`. Clear the sheet's
+Image URL if you want the local image to win.
 
 **A logo is missing** — run `python scripts/download_assets.py`, then commit the
 new file under `public/assets/logos/`.

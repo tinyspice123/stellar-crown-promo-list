@@ -108,6 +108,18 @@ function tcgdexBaseFor(cfg){
   return s ? `https://assets.tcgdex.net/en/${s[0].toLowerCase()}/${cfg.tcgdexSet}` : null;
 }
 
+// Stable manifest identity: cosmetic punctuation/case edits in a sheet should
+// not disconnect an exact local image. Collector annotations such as "(IR)"
+// are display text, not part of the printed card number.
+function canonicalManifestText(value){
+  return (String(value||'').normalize('NFKC').toLocaleLowerCase('en')
+    .match(/[\p{L}\p{N}]+/gu)||[]).join(' ');
+}
+function manifestKey(card,number,variant){
+  const stableNumber=String(number||'').split('(')[0];
+  return [card,stableNumber,variant].map(canonicalManifestText).join('|');
+}
+
 // Ordered list of image URLs to try for a card: sheet Image column, local
 // img/<setId>/ copy, imgTemplate, pokemontcg.io, TCGdex (both paddings),
 // then an SVP promo lookup. Callers render the first URL and fall back
@@ -115,7 +127,7 @@ function tcgdexBaseFor(cfg){
 function imgCandidatesPure(it, cfg, setId, imgMap){
   const out=[];
   if(it.img && /^https?:\/\//i.test(it.img)) out.push(it.img);
-  const localFile = imgMap ? imgMap.get(`${it.card}|${it.num}|${it.variant}`) : null;
+  const localFile = imgMap ? imgMap.get(manifestKey(it.card,it.num,it.variant)) : null;
   if(localFile) out.push("img/"+setId+"/"+localFile);
   const m=it.num.match(/^(\d+)\s*\//);   // any NNN/MMM number
   const p=it.num.match(/^SVP\s*(\d+)/i);
@@ -208,21 +220,26 @@ function exportCsv(kind, list){
 
 // Marketplace search URLs stay useful when listings change, unlike links to
 // individual offers. Generic variants add no search value and are omitted.
-function marketplaceSearchUrls(it,cardmarketSet=''){
+function marketplaceSearchUrls(it,cardmarketSet='',cardmarketUrl=''){
   const variant=/^(?:regular|standard|normal)$/i.test((it.variant||'').trim())
     ? '' : (it.variant||'').trim();
   const number=String(it.num||'').trim();
   const promo=/^[A-Za-z][A-Za-z0-9-]*\s+\d+$/.test(number);
-  const regular=number.match(/^(\d+)(?:\/\d+)?$/);
+  const regular=/^(\d+)(?:\/\d+)?$/.exec(number);
   let cardmarketNumber='';
   if(promo) cardmarketNumber=number;
   else if(cardmarketSet && regular) cardmarketNumber=`${cardmarketSet} ${regular[1]}`;
   const cardmarketQuery=[it.card,cardmarketNumber]
     .map(v=>String(v||'').trim()).filter(Boolean).join(' ');
-  const ebayQuery=[it.card,number,variant]
+  // Species and other mixed-set collections need their source set in the
+  // query. Without it, eBay can interpret names such as "Mew" as the MEW
+  // expansion code used by Scarlet & Violet—151.
+  const collectionSource=cardmarketUrl ? (it.src||it.group||'') : '';
+  const ebayQuery=[it.card,number,variant,collectionSource,
+    cardmarketUrl ? 'Pokemon card' : '']
     .map(v=>String(v||'').trim()).filter(Boolean).join(' ');
   return {
-    cardmarket:`https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encodeURIComponent(cardmarketQuery)}`,
+    cardmarket:cardmarketUrl || `https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encodeURIComponent(cardmarketQuery)}`,
     ebay:`https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(ebayQuery)}`,
   };
 }
@@ -232,6 +249,7 @@ function marketplaceSearchUrls(it,cardmarketSet=''){
 if(typeof module!=="undefined" && module.exports){
   module.exports={
     csvToRows,priceMid,matchesQuery,parseHaveQty,detectColumns,rowsToItems,imgCandidatesPure,
+    canonicalManifestText,manifestKey,
     esc,safeImageUrl,setSafeImageSource,sortItems,exportText,exportCsv,csvEscape,
     marketplaceSearchUrls
   };
