@@ -36,6 +36,7 @@ jobs:
             /.github/
             /public/
             /tests/
+            /eslint.config.mjs
             /package-lock.json
             /package.json
 
