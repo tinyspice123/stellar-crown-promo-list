@@ -26,13 +26,23 @@ jobs:
           python-version: "3.14"
       - name: Fetch all sheets
         run: python scripts/backup_sheets.py
+      - name: Synchronize image manifests
+        shell: bash
+        run: |
+          for manifest in public/img/*/manifest.txt; do
+            set_id="$(basename "$(dirname "$manifest")")"
+            sheet="backups/$set_id.csv"
+            if [[ -f "$sheet" ]]; then
+              python scripts/sync_manifest.py "$sheet" "$set_id"
+            fi
+          done
       - name: Validate collection backups and image manifests
         run: python scripts/validate_data.py
       - name: Commit if changed
         run: |
           git config user.name "collection-backup[bot]"
           git config user.email "actions@github.com"
-          git add backups/
+          git add backups/ public/img/*/manifest.txt
           if git diff --cached --quiet; then
             echo "No changes since last backup"
           else

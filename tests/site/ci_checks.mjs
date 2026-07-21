@@ -28,6 +28,7 @@ for (const [id, cfg] of Object.entries(SETS)) {
   if (/^\d+$/.test(id)) fail(`key "${id}" is purely numeric - JS reorders these; rename it`);
   if (!/^[a-z0-9-]+$/.test(id)) fail(`key "${id}" is not kebab-case (lowercase letters, digits, hyphens only) - rename it to match the other set ids`);
   if (!cfg.name) fail(`"${id}" has no name`);
+  if (!cfg.cardmarketSet) fail(`"${id}" has no Cardmarket set code`);
   for (const [field, value] of Object.entries(cfg)) {
     if (!allowedSetFields.has(field))
       fail(`"${id}" has unknown field "${field}" - possible typo`);

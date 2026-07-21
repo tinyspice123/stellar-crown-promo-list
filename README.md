@@ -113,6 +113,8 @@ python scripts/sync_manifest.py path/to/sheet.csv stellar-crown
 Use `--check` to report drift without editing the manifest. Cosmetic case and
 punctuation changes are already ignored by runtime lookup; the sync command
 handles unambiguous wording changes and refuses uncertain matches.
+The scheduled backup workflow runs this synchronization automatically before
+validating and committing refreshed sheet backups.
 
 That command writes images and a lookup manifest to
 `public/img/stellar-crown/`. Commit both the images and `manifest.txt`.
