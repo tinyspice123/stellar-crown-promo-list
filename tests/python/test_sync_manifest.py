@@ -10,7 +10,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 import sync_manifest as sync_module  # noqa: E402
 from sync_manifest import (matching_sheet_row, read_sheet_cards, sync_manifest,
-                           synchronized_lines, variant_similarity)  # noqa: E402
+                           resolve_file_within, synchronized_lines,
+                           variant_similarity)  # noqa: E402
 
 
 class MatchingTests(unittest.TestCase):
@@ -82,6 +83,14 @@ class SyncTests(unittest.TestCase):
         self.manifest.write_text("Pikachu|025|Normal|card.jpg\n", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "no unambiguous sheet row"):
             sync_manifest(self.sheet, "example", self.root)
+
+    def test_paths_cannot_escape_root_and_set_id_is_restricted(self):
+        self.write_sheet()
+        with tempfile.NamedTemporaryFile() as outside:
+            with self.assertRaisesRegex(ValueError, "inside"):
+                resolve_file_within(self.root, Path(outside.name), "sheet")
+        with self.assertRaisesRegex(ValueError, "set ID"):
+            sync_manifest(self.sheet, "../example", self.root)
 
     def test_invalid_sheet_headers_and_manifest_lines_are_reported(self):
         self.sheet.write_text("Group,Name\nBase,Pikachu\n", encoding="utf-8")

@@ -9,12 +9,22 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from validate_data import (canonical_manifest_text, find_column,
                            normalized_key)
+
+
+def resolve_file_within(root: Path, candidate: Path, label: str) -> Path:
+    """Resolve an existing file and reject paths escaping the repository."""
+    base = root.resolve()
+    resolved = candidate.resolve(strict=True)
+    if not resolved.is_relative_to(base) or not resolved.is_file():
+        raise ValueError(f"{label} must be a file inside {base}")
+    return resolved
 
 
 def read_sheet_cards(path: Path) -> list[tuple[str, str, str]]:
@@ -85,10 +95,15 @@ def synchronized_lines(manifest: Path, sheet_rows: list[tuple[str, str, str]]):
 
 
 def sync_manifest(sheet: Path, set_id: str, root: Path, check: bool = False) -> tuple[int, int]:
-    manifest = root / "public" / "img" / set_id / "manifest.txt"
-    if not manifest.is_file():
-        raise FileNotFoundError(f"manifest not found: {manifest}")
-    new_lines, errors = synchronized_lines(manifest, read_sheet_cards(sheet))
+    if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", set_id) is None:
+        raise ValueError("set ID must contain only lowercase letters, numbers and hyphens")
+    safe_sheet = resolve_file_within(root, sheet, "sheet")
+    manifest_candidate = root / "public" / "img" / set_id / "manifest.txt"
+    try:
+        manifest = resolve_file_within(root, manifest_candidate, "manifest")
+    except FileNotFoundError as error:
+        raise FileNotFoundError(f"manifest not found: {manifest_candidate}") from error
+    new_lines, errors = synchronized_lines(manifest, read_sheet_cards(safe_sheet))
     if errors:
         raise ValueError("\n".join(errors))
     old_lines = [line for line in manifest.read_text(encoding="utf-8-sig").splitlines()
