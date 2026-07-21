@@ -45,9 +45,15 @@ function csvToRows(text){
 // Average of the numbers in a price string: "£1.20" -> 1.2, "~£4-11" -> 7.5,
 // "" / no digits -> null (excluded from value stats).
 function priceMid(p){
-  const nums=(String(p||"").match(/\d+(?:\.\d+)?/g)||[]).map(Number);
+  const nums=(String(p||"").replaceAll(",","").match(/\d+(?:\.\d+)?/g)||[]).map(Number);
   if(!nums.length) return null;
   return nums.length>1 ? (nums[0]+nums[1])/2 : nums[0];
+}
+
+function matchesQuery(it,q){
+  const needle=String(q||"").trim().toLowerCase();
+  return !needle || [it.card,it.num,it.variant,it.src]
+    .map(value=>String(value||"")).join(" ").toLowerCase().includes(needle);
 }
 
 // The Have column takes a bare quantity ("3"), a truthy marker (TRUE/x/yes),
@@ -225,7 +231,7 @@ function marketplaceSearchUrls(it,cardmarketSet=''){
 // defined, so lib.js continues to behave as a classic script with globals.
 if(typeof module!=="undefined" && module.exports){
   module.exports={
-    csvToRows,priceMid,parseHaveQty,detectColumns,rowsToItems,imgCandidatesPure,
+    csvToRows,priceMid,matchesQuery,parseHaveQty,detectColumns,rowsToItems,imgCandidatesPure,
     esc,safeImageUrl,setSafeImageSource,sortItems,exportText,exportCsv,csvEscape,
     marketplaceSearchUrls
   };

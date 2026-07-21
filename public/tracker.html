@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.pokemontcg.io https://assets.tcgdex.net; connect-src 'self' https://docs.google.com https://doc-08-3o-sheets.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.pokemontcg.io https://assets.tcgdex.net; connect-src 'self' https://docs.google.com https://*.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
 <title>Stellar Crown — Collection Tracker</title>
 <script src="sets.js"></script>
 <script src="lib.js"></script>
@@ -92,7 +92,7 @@
 <dialog class="lightbox" id="lightbox" aria-label="Card image viewer">
   <button class="lb-close" aria-label="Close">✕</button>
   <figure>
-    <img id="lbImg" alt="">
+    <img id="lbImg" crossorigin="anonymous" alt="">
     <figcaption><span id="lbName"></span><span class="lb-num" id="lbNum"></span><span class="lb-var" id="lbVar"></span></figcaption>
   </figure>
 </dialog>

@@ -13,6 +13,8 @@ class FakeCache {
   async addAll(urls){ this.precached.push(...urls); }
   async match(request){ return this.entries.get(this.key(request)); }
   async put(request,response){ this.entries.set(this.key(request),response); }
+  async keys(){ return [...this.entries.keys()]; }
+  async delete(request){ return this.entries.delete(this.key(request)); }
 }
 
 let listeners, stores, deleted, fetchImpl, skipWaitingCalled, claimCalled, warnings;
@@ -72,7 +74,7 @@ beforeEach(loadWorker);
 test('install precaches the shell and activates immediately',async()=>{
   const event=lifecycleEvent();
   listeners.install(event); await event.promise;
-  assert.deepEqual(stores.get('shell-v4').precached,
+  assert.deepEqual(stores.get('shell-v5').precached,
     ['./','index.html','index.css','index.js','tracker.html','tracker.css',
       'tracker.js','sets.js','lib.js','manifest.json']);
   assert.equal(skipWaitingCalled,true);
@@ -83,10 +85,11 @@ test('activate removes stale caches but preserves shell and card images',async()
   stores.set('shell-v2',new FakeCache());
   stores.set('shell-v3',new FakeCache());
   stores.set('shell-v4',new FakeCache());
+  stores.set('shell-v5',new FakeCache());
   stores.set('card-images-v1',new FakeCache());
   const event=lifecycleEvent();
   listeners.activate(event); await event.promise;
-  assert.deepEqual(deleted.sort(),['shell-v2','shell-v3','v2']);
+  assert.deepEqual(deleted.sort(),['shell-v2','shell-v3','shell-v4','v2']);
   assert.equal(stores.has('card-images-v1'),true);
   assert.equal(claimCalled,true);
 });
@@ -102,7 +105,7 @@ test('image cache hit avoids another network transfer',async()=>{
   assert.equal(fetches,0);
 });
 
-test('successful and opaque card images are cached',async()=>{
+test('successful CORS images are cached but opaque images are not',async()=>{
   for(const [url,response] of [
     ['https://cards.test/ok.png',fakeResponse()],
     ['https://cards.test/opaque.jpg',fakeResponse({ok:false,type:'opaque'})],
@@ -110,7 +113,7 @@ test('successful and opaque card images are cached',async()=>{
     fetchImpl=async()=>response;
     const event=fetchEvent(url); listeners.fetch(event);
     assert.equal(await event.response,response);
-    assert.equal((await storesForImages()).entries.has(url),true);
+    assert.equal((await storesForImages()).entries.has(url),response.type!=='opaque');
   }
 });
 
@@ -137,11 +140,11 @@ test('same-origin pages are network-first and cached',async()=>{
   const event=fetchEvent('https://tracker.test/tracker.html');
   listeners.fetch(event);
   assert.equal(await event.response,network);
-  assert.equal(stores.get('shell-v4').entries.has(event.request.url),true);
+  assert.equal(stores.get('shell-v5').entries.has(event.request.url),true);
 });
 
 test('page requests fall back to cache offline and non-GET is ignored',async()=>{
-  const shell=new FakeCache(); stores.set('shell-v4',shell);
+  const shell=new FakeCache(); stores.set('shell-v5',shell);
   const cached=fakeResponse({body:'offline'});
   await shell.put('https://tracker.test/index.html',cached);
   fetchImpl=async()=>{ throw new Error('offline'); };
@@ -153,6 +156,13 @@ test('page requests fall back to cache offline and non-GET is ignored',async()=>
   const post=fetchEvent('https://tracker.test/save','POST');
   listeners.fetch(post);
   assert.equal(post.response,null);
+});
+
+test('uncached offline requests resolve to an error response',async()=>{
+  fetchImpl=async()=>{ throw new Error('offline'); };
+  const event=fetchEvent('https://tracker.test/not-cached.html');
+  listeners.fetch(event);
+  assert.equal((await event.response).type,'error');
 });
 
 async function storesForImages(){

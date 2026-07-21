@@ -173,7 +173,7 @@ function render(){
   const shown=items.filter(it=>{
     if(gsel && it.group!==gsel) return false;
     if(missOnly && it.qty>0) return false;
-    if(q && !(it.card+" "+it.num+" "+it.variant+" "+it.src).toLowerCase().includes(q)) return false;
+    if(!matchesQuery(it,q)) return false;
     return true;
   });
   document.getElementById('empty').style.display = shown.length? 'none':'block';
@@ -255,7 +255,7 @@ function cardEl(it){
   const qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
   d.innerHTML=`
     <div class="imgwrap${/reverse\s*holo/i.test(it.variant)?' rh':''}">
-      ${url?`<img loading="lazy" decoding="async" fetchpriority="low" alt="${esc(it.card)}" data-src="${esc(url)}"
+      ${url?`<img loading="lazy" decoding="async" fetchpriority="low" crossorigin="anonymous" alt="${esc(it.card)}" data-src="${esc(url)}"
         data-alts="${esc(alts.join('|'))}" data-ph="${initial}">`
         :`<div class="ph"><b>${initial}</b><span>variant</span></div>`}
       ${it.price?`<span class="pricechip">${esc(it.price)}</span>`:''}
@@ -314,8 +314,8 @@ let lbList=[], lbIndex=-1;
 let lbRequest=0;
 function openLightbox(it,shownSrc){
   const request=++lbRequest;
-  lbList=[...document.querySelectorAll('.imgwrap img[src]')];
-  lbIndex=lbList.findIndex(im=>im.src===shownSrc);
+  lbList=[...document.querySelectorAll('.item')].filter(card=>card.__item && card.querySelector('.imgwrap img'));
+  lbIndex=lbList.findIndex(card=>card.__item===it);
   lb.querySelector('figure').classList.toggle('rh', /reverse\s*holo/i.test(it.variant));
   document.getElementById('lbName').textContent=it.card;
   document.getElementById('lbNum').textContent=it.num;
@@ -351,9 +351,10 @@ lb.querySelector('.lb-close').addEventListener('click',closeLightbox);
 function lbStep(dir){
   if(!lbList.length) return;
   lbIndex=(lbIndex+dir+lbList.length)%lbList.length;
-  const im=lbList[lbIndex];
-  const card=im.closest('.item');
-  if(card?.__item) openLightboxKeepList(card.__item, im.src);
+  const card=lbList[lbIndex];
+  const im=card.querySelector('.imgwrap img');
+  const src=im.src || im.dataset.src;
+  if(card.__item && src) openLightboxKeepList(card.__item, src);
 }
 function openLightboxKeepList(it,src){
   const keepL=lbList, keepI=lbIndex;
@@ -391,7 +392,11 @@ function stats(){
   document.getElementById('sValMiss').parentElement.style.display=anyPrice?'':'none';
 }
 
-document.getElementById('q').addEventListener('input',render);
+let searchTimer=null;
+document.getElementById('q').addEventListener('input',()=>{
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(render,125);
+});
 document.getElementById('groupSel').addEventListener('change',render);
 // ---- export missing / owned ----
 function exportItems(kind){ // respects search + group filters; ignores the Missing-only toggle
@@ -400,7 +405,7 @@ function exportItems(kind){ // respects search + group filters; ignores the Miss
   return items.filter(it=>{
     if(!it.card) return false;
     if(gsel && it.group!==gsel) return false;
-    if(q && !(it.card+" "+it.num+" "+it.variant).toLowerCase().includes(q)) return false;
+    if(!matchesQuery(it,q)) return false;
     return kind==='missing' ? it.qty<=0 : it.qty>0;
   });
 }

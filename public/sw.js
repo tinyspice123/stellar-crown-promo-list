@@ -2,10 +2,11 @@
 // Strategy: network-first for pages/config (so updates land immediately),
 // cache-first for images and logos (fast + offline), never cache sheet CSVs
 // beyond a session fallback.
-const VERSION = 'shell-v4';
+const VERSION = 'shell-v5';
 // Keep downloaded card art across shell releases. Browser storage quotas still
 // apply, so the user agent may evict older images when space is constrained.
 const IMAGE_CACHE = 'card-images-v1';
+const IMAGE_CACHE_LIMIT = 200;
 const SHELL = [
   './', 'index.html', 'index.css', 'index.js',
   'tracker.html', 'tracker.css', 'tracker.js',
@@ -29,10 +30,13 @@ async function cacheFirstImage(request){
   if(hit) return hit;
   try{
     const response=await fetch(request);
-    // Cross-origin <img> responses are commonly opaque (status 0), but
-    // the Cache API can safely store and replay them for the same URL.
-    if(response.ok || response.type==='opaque'){
+    // Cache real CORS responses; opaque responses carry a severe quota cost.
+    if(response.ok && response.type!=='opaque'){
       await cache.put(request,response.clone());
+      const keys=await cache.keys();
+      if(keys.length>IMAGE_CACHE_LIMIT){
+        await Promise.all(keys.slice(0,keys.length-IMAGE_CACHE_LIMIT).map(key=>cache.delete(key)));
+      }
     }
     return response;
   }catch(error){
@@ -51,7 +55,7 @@ async function networkFirst(request,url){
     return response;
   }catch(error){
     console.warn('Network request failed; using the offline cache.',error);
-    return caches.match(request);
+    return (await caches.match(request)) || Response.error();
   }
 }
 

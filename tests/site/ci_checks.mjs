@@ -77,7 +77,10 @@ for (const file of ['index.html', 'tracker.html']) {
       fail('CSP is missing object-src/base-uri restrictions');
     if (csp.includes('sha256-')) fail('CSP contains a stale inline-content hash');
     if (csp.includes("'unsafe-inline'")) fail("CSP must not allow 'unsafe-inline'");
-    if (csp.includes('*')) fail('CSP must use exact hosts, not wildcards');
+    // Google published-sheet redirects use rotating doc-XX shards. Permit only
+    // that scoped wildcard; all other CSP sources must remain exact hosts.
+    if (csp.replace('https://*.googleusercontent.com','').includes('*'))
+      fail('CSP must use exact hosts except for Google published-sheet shards');
     if (/img-src[^;]*\shttps:\s*(?:;|$)/.test(csp))
       fail('CSP image sources must use explicit hosts, not all HTTPS origins');
   }
@@ -116,8 +119,10 @@ catch (e) { fail('manifest.json invalid: ' + e.message); }
 const swSrc = fs.readFileSync(sitePath('sw.js'), 'utf8');
 if (!swSrc.includes("const IMAGE_CACHE = 'card-images-v1'"))
   fail('sw.js: persistent image cache is not configured');
-if (!/\.type\s*===\s*['"]opaque['"]/.test(swSrc))
-  fail('sw.js: cross-origin opaque card images will not be cached');
+if (!swSrc.includes('IMAGE_CACHE_LIMIT'))
+  fail('sw.js: image cache is not bounded');
+if (!/\.type\s*!==\s*['"]opaque['"]/.test(swSrc))
+  fail('sw.js: opaque image responses are not excluded from the cache');
 const shellM = swSrc.match(/const SHELL = \[([^\]]*)\]/);
 if (!shellM) fail('sw.js: SHELL list not found');
 else {

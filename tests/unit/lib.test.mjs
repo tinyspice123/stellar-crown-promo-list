@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 // its source through new Function creates an anonymous script whose coverage
 // SonarQube cannot match to the repository file.
 const require = createRequire(import.meta.url);
-const {csvToRows, priceMid, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
+const {csvToRows, priceMid, matchesQuery, parseHaveQty, detectColumns, rowsToItems, imgCandidatesPure,
        esc, safeImageUrl, setSafeImageSource, sortItems, exportText, exportCsv,
        csvEscape, marketplaceSearchUrls} = require('../../public/lib.js');
 
@@ -32,6 +32,16 @@ test('priceMid: single price', () => { assert.equal(priceMid('£1.20'), 1.2); })
 test('priceMid: range is averaged', () => { assert.equal(priceMid('~£4-11'), 7.5); });
 test('priceMid: empty string -> null', () => { assert.equal(priceMid(''), null); });
 test('priceMid: no digits -> null', () => { assert.equal(priceMid('TBD'), null); });
+test('priceMid: thousands separator stays within one number', () => {
+  assert.equal(priceMid('GBP 1,200'), 1200);
+});
+
+test('matchesQuery includes Source and handles empty fields', () => {
+  const card={card:'Pikachu',num:'025',variant:'Regular',src:'Build & Battle Box'};
+  assert.equal(matchesQuery(card,'battle box'),true);
+  assert.equal(matchesQuery(card,'eevee'),false);
+  assert.equal(matchesQuery({...card,src:null},''),true);
+});
 
 test('parseHaveQty: numeric string', () => { assert.equal(parseHaveQty('3'), 3); });
 test('parseHaveQty: TRUE -> 1', () => { assert.equal(parseHaveQty('TRUE'), 1); });
