@@ -50,3 +50,23 @@ jobs:
           grep -Fq "https://$final_host" public/index.html
           grep -Fq "https://$final_host" public/tracker.html
           echo "Published CSV is reachable through CSP-allowed host: $final_host"
+
+  check-logos:
+    name: Set logo reachability
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /public/sets.js
+            /scripts/check_logos.py
+            /scripts/sets_js.py
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Check every set's logo resolves
+        run: python scripts/check_logos.py

@@ -161,7 +161,7 @@ Run this manually to snapshot every configured sheet into `backups/`:
 python scripts/backup_sheets.py
 ```
 
-The scheduled backup workflow runs the same command weekly and commits only
+The scheduled backup workflow runs the same command daily and commits only
 when sheet data changed. It also synchronizes image manifests; when that changes
 anything under `public/`, the workflow explicitly dispatches the normal test and
 deployment pipeline so production never waits for an unrelated push.

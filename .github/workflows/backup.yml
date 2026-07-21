@@ -1,14 +1,11 @@
-# Collection history: snapshots every set's sheet into backups/ weekly.
+# Collection history: snapshots every set's sheet into backups/ daily.
 # Git history makes each snapshot diffable — you can see exactly which
 # cards were added between any two weeks, and restore any past state.
-# Also runs a weekly logo-reachability check here rather than in the
-# deploy pipeline, since both are external-network checks that shouldn't
-# gate (or flake out) a deploy.
 name: Backup collection sheets
 
 on:
   schedule:
-    - cron: "0 9 * * 1"     # every Monday 09:00 UTC
+    - cron: "0 9 * * *"     # every day at 09:00 UTC
   workflow_dispatch:         # and on demand from the Actions tab
 
 permissions:
@@ -61,14 +58,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run ci-quality-deploy.yml --ref main
-
-  check-logos:
-    name: Set logo reachability
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.14"
-      - name: Check every set's logo resolves
-        run: python scripts/check_logos.py

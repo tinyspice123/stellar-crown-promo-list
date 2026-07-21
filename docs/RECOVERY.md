@@ -28,7 +28,7 @@ Disable maintenance only after a full site artifact has deployed successfully.
 ## Restore collection data
 
 Published Google Sheets are the live source. Versioned snapshots are stored as
-`backups/<set-id>.csv` by the weekly backup workflow.
+`backups/<set-id>.csv` by the daily backup workflow.
 
 1. Identify the last good CSV using Git history.
 2. Download that revision of the backup.
