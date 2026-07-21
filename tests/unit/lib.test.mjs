@@ -210,4 +210,11 @@ test('marketplaceSearchUrls', async (t) => {
     assert.equal(new URL(urls.cardmarket).searchParams.get('searchString'),
       'Crabominable SVP 134');
   });
+  await t.test('uses a collection-level Cardmarket page when configured', () => {
+    const species='https://www.cardmarket.com/en/Pokemon/Species/Mew';
+    const urls=marketplaceSearchUrls(
+      {card:'Mew ex',num:'151/165',variant:'Holofoil'}, 'MEW', species);
+    assert.equal(urls.cardmarket,species);
+    assert.match(new URL(urls.ebay).searchParams.get('_nkw'),/Mew ex/);
+  });
 });

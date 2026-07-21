@@ -14,6 +14,7 @@
 //   tcgSet     pokemontcg.io id (images + logo; covers sets up to ~2025)
 //   tcgdexSet  TCGdex id (images + logo; covers newer sets incl. Mega era)
 //   cardmarketSet  Cardmarket catalog code used in marketplace searches
+//   cardmarketUrl  optional collection-wide Cardmarket page (e.g. a species)
 //   logo / imgTemplate / promoSet / subtitle / eyebrow: optional
 // =====================================================================
 
@@ -195,6 +196,13 @@ const SETS = {
    sheetGid: "1809096743",
     tcgdexSet: "me05",       // VERIFY on tcgdex.net
     cardmarketSet: "PBL",
+  },
+
+  "mew-collection": {
+    name: "Mew Collection",
+    code: "MEW",
+    sheetGid: "1254467412",
+    cardmarketUrl: "https://www.cardmarket.com/en/Pokemon/Species/Mew",
   },
 
 };
