@@ -171,9 +171,12 @@ function filterUrl(){
     ? next.searchParams.set(key,value) : next.searchParams.delete(key));
   return next;
 }
-function commitFilters(){
+function commitFilters(pushHistory=false){
   const next=filterUrl();
-  if(next.href!==location.href) history.pushState(null,'',next);
+  if(next.href!==location.href){
+    const method=pushHistory?'pushState':'replaceState';
+    history[method](null,'',next);
+  }
   render();
 }
 function toggleGroup(g){
@@ -422,9 +425,9 @@ function stats(){
 let searchTimer=null;
 document.getElementById('q').addEventListener('input',()=>{
   clearTimeout(searchTimer);
-  searchTimer=setTimeout(commitFilters,125);
+  searchTimer=setTimeout(()=>commitFilters(false),125);
 });
-document.getElementById('groupSel').addEventListener('change',commitFilters);
+document.getElementById('groupSel').addEventListener('change',()=>commitFilters(true));
 // ---- export missing / owned ----
 function exportItems(kind){ // respects search + group filters; ignores the Missing-only toggle
   const q=(document.getElementById('q')?.value||"").trim().toLowerCase();
@@ -484,7 +487,7 @@ document.addEventListener('keydown',e=>{
   btn.focus();  // hand focus back to the trigger, as a native menu would
 });
 
-document.getElementById('missOnly').addEventListener('change',commitFilters);
+document.getElementById('missOnly').addEventListener('change',()=>commitFilters(true));
 document.getElementById('sortSel').addEventListener('change',e=>{
   storageSet(SORT_KEY,e.target.value);
   render();

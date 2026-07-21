@@ -42,13 +42,16 @@ but does not validate its contents.
 ## Respond to a sheet outage
 
 1. Open the configured CSV URL from `public/sets.js` directly.
-2. Confirm it returns CSV rather than a Google sign-in or HTML error page.
-3. In Google Sheets, use **Share → Publish to web**, choose the individual tab
+2. Check the browser console for a CSP violation involving a different
+   `doc-XX-YY-sheets.googleusercontent.com` host. Google can change the shard
+   used by its published-CSV redirect without producing an application log.
+3. Confirm it returns CSV rather than a Google sign-in or HTML error page.
+4. In Google Sheets, use **Share → Publish to web**, choose the individual tab
    and CSV, then compare the resulting URL with `sets.js`.
-4. If the delivery hostname changes, update the CSP only after verifying that
-   the redirect belongs to Google and update `scripts/backup_sheets.py` with the
-   same allowlisted host.
-5. Run the site, Python, and browser checks before deployment.
+5. If the delivery hostname changes, update the CSP in `public/index.html` and
+   `public/tracker.html` only after verifying that the redirect belongs to
+   Google, then update `scripts/backup_sheets.py` with the same allowlisted host.
+6. Run the site, Python, and browser checks before deployment.
 
 ## Repair missing or incorrect images
 
