@@ -225,7 +225,12 @@ function marketplaceSearchUrls(it,cardmarketSet='',cardmarketUrl=''){
   else if(cardmarketSet && regular) cardmarketNumber=`${cardmarketSet} ${regular[1]}`;
   const cardmarketQuery=[it.card,cardmarketNumber]
     .map(v=>String(v||'').trim()).filter(Boolean).join(' ');
-  const ebayQuery=[it.card,number,variant]
+  // Species and other mixed-set collections need their source set in the
+  // query. Without it, eBay can interpret names such as "Mew" as the MEW
+  // expansion code used by Scarlet & Violet—151.
+  const collectionSource=cardmarketUrl ? (it.src||it.group||'') : '';
+  const ebayQuery=[it.card,number,variant,collectionSource,
+    cardmarketUrl ? 'Pokemon card' : '']
     .map(v=>String(v||'').trim()).filter(Boolean).join(' ');
   return {
     cardmarket:cardmarketUrl || `https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encodeURIComponent(cardmarketQuery)}`,

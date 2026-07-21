@@ -213,8 +213,18 @@ test('marketplaceSearchUrls', async (t) => {
   await t.test('uses a collection-level Cardmarket page when configured', () => {
     const species='https://www.cardmarket.com/en/Pokemon/Species/Mew';
     const urls=marketplaceSearchUrls(
-      {card:'Mew ex',num:'151/165',variant:'Holofoil'}, 'MEW', species);
+      {card:'Mew',num:'8',variant:'Normal — English',
+        group:'Wizards Black Star Promos (1999/07/01)',
+        src:'Wizards Black Star Promos — English'}, 'MEW', species);
     assert.equal(urls.cardmarket,species);
-    assert.match(new URL(urls.ebay).searchParams.get('_nkw'),/Mew ex/);
+    assert.equal(new URL(urls.ebay).searchParams.get('_nkw'),
+      'Mew 8 Normal — English Wizards Black Star Promos — English Pokemon card');
+  });
+  await t.test('falls back to the collection group when source is absent', () => {
+    const urls=marketplaceSearchUrls(
+      {card:'Mew ex',num:'151/165',variant:'Holofoil',group:'Pokemon 151'},
+      '', 'https://www.cardmarket.com/en/Pokemon/Species/Mew');
+    assert.equal(new URL(urls.ebay).searchParams.get('_nkw'),
+      'Mew ex 151/165 Holofoil Pokemon 151 Pokemon card');
   });
 });
