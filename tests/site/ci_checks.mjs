@@ -39,6 +39,8 @@ for (const [id, cfg] of Object.entries(SETS)) {
   if (cfg.sheetGid && !/^\d+$/.test(cfg.sheetGid)) fail(`"${id}" sheetGid must contain digits only`);
   if (cfg.sheetGid && !cfg.sheet?.includes(`gid=${cfg.sheetGid}&`))
     fail(`"${id}" generated sheet URL does not contain its sheetGid`);
+  if (!fs.existsSync(sitePath(path.join('img', id, 'manifest.txt'))))
+    fail(`"${id}" has no image manifest`);
 }
 const gids = Object.entries(SETS).flatMap(([id, c]) => {
   const m = (c.sheet || '').match(/gid=(\d+)/); return m ? [[id, m[1]]] : [];
