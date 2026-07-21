@@ -53,9 +53,10 @@ but does not validate its contents.
 ## Repair missing or incorrect images
 
 1. Check the row's Card, Number, and Variant text against
-   `public/img/<set-id>/manifest.txt`; matching is exact apart from case.
-2. Correct the sheet wording or regenerate overrides with
-   `scripts/download_images.py`.
+   `public/img/<set-id>/manifest.txt`; cosmetic case and punctuation differences
+   are ignored.
+2. Correct the sheet Image URL and regenerate the images and manifest with
+   `python scripts/download_images.py backups/<set-id>.csv <set-id>`.
 3. If only labels changed, run
    `python scripts/sync_manifest.py path/to/sheet.csv <set-id>` to re-key the
    existing images without downloading them again.

@@ -87,8 +87,9 @@ class SyncTests(unittest.TestCase):
     def test_paths_cannot_escape_root_and_set_id_is_restricted(self):
         self.write_sheet()
         with tempfile.NamedTemporaryFile() as outside:
+            outside_path = Path(outside.name)
             with self.assertRaisesRegex(ValueError, "inside"):
-                resolve_file_within(self.root, Path(outside.name), "sheet")
+                resolve_file_within(self.root, outside_path, "sheet")
         with self.assertRaisesRegex(ValueError, "set ID"):
             sync_manifest(self.sheet, "../example", self.root)
 
