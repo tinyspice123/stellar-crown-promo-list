@@ -1,0 +1,273 @@
+Merge branch 'main' of https://github.com/tinyspice123/ultimate_pokemon_card_tracker
+
+# Conflicts:
+#	public/lib.js
+#	tests/unit/sw.test.mjs
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please run
+#	git update-ref -d MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main
+# Your branch and 'origin/main' have diverged,
+# and have 1 and 22 different commits each, respectively.
+#
+# All conflicts fixed but you are still merging.
+#
+# Changes to be committed:
+#	modified:   .github/renovate.json
+#	modified:   .github/workflows/backup.yml
+#	modified:   .github/workflows/ci-quality-deploy.yml
+#	new file:   .github/workflows/maintenance.yml
+#	modified:   README.md
+#	new file:   backups/ascended-heroes.csv
+#	new file:   backups/black-bolt.csv
+#	new file:   backups/chaos-rising.csv
+#	new file:   backups/destined-rivals.csv
+#	new file:   backups/journey-together.csv
+#	new file:   backups/mega-evolution.csv
+#	new file:   backups/mew-collection.csv
+#	new file:   backups/obsidian-flames.csv
+#	new file:   backups/paldea-evolved.csv
+#	new file:   backups/paldean-fates.csv
+#	new file:   backups/paradox-rift.csv
+#	modified:   backups/perfect-order.csv
+#	new file:   backups/phantasmal-flames.csv
+#	new file:   backups/pitch-black.csv
+#	new file:   backups/pokemon-151.csv
+#	new file:   backups/prismatic-evolutions.csv
+#	new file:   backups/scarlet-violet.csv
+#	new file:   backups/shrouded-fable.csv
+#	modified:   backups/stellar-crown.csv
+#	new file:   backups/surging-sparks.csv
+#	new file:   backups/temporal-forces.csv
+#	new file:   backups/twilight-masquerade.csv
+#	new file:   backups/white-flare.csv
+#	new file:   docs/RECOVERY.md
+#	new file:   maintenance/404.html
+#	new file:   maintenance/index.html
+#	new file:   maintenance/maintenance.css
+#	new file:   public/404.html
+#	new file:   public/assets/logos/mew-collection.png
+#	new file:   public/img/ascended-heroes/manifest.txt
+#	new file:   public/img/black-bolt/manifest.txt
+#	new file:   public/img/chaos-rising/manifest.txt
+#	new file:   public/img/destined-rivals/manifest.txt
+#	new file:   public/img/journey-together/manifest.txt
+#	new file:   public/img/mega-evolution/manifest.txt
+#	new file:   public/img/mew-collection/_____'s_mew_013_21311b.jpg
+#	new file:   public/img/mew-collection/ancient_mew_unnumberedmiscp-1_299cfe.jpg
+#	new file:   public/img/mew-collection/ancient_mew_unnumberedmiscp_ja-101_2431fa.jpg
+#	new file:   public/img/mew-collection/ancient_mew_unnumberedmiscp_ja-291_754f6c.jpg
+#	new file:   public/img/mew-collection/ancient_mew_unnumberedmiscp_ja-291_848064.jpg
+#	new file:   public/img/mew-collection/manifest.txt
+#	new file:   public/img/mew-collection/mew-ex_022_c95eb5.jpg
+#	new file:   public/img/mew-collection/mew-ex_022_e192b8.jpg
+#	new file:   public/img/mew-collection/mew-ex_051_348b85.jpg
+#	new file:   public/img/mew-collection/mew-ex_051_806946.jpg
+#	new file:   public/img/mew-collection/mew-ex_120_7f61e3.jpg
+#	new file:   public/img/mew-collection/mew-ex_46_3462be.jpg
+#	new file:   public/img/mew-collection/mew-ex_46_94e395.jpg
+#	new file:   public/img/mew-collection/mew-ex_46_b2f6f1.jpg
+#	new file:   public/img/mew-collection/mew-ex_rc24_80fa09.jpg
+#	new file:   public/img/mew-collection/mew-ex_xy126_b728a1.jpg
+#	new file:   public/img/mew-collection/mew_002_0ee518.jpg
+#	new file:   public/img/mew-collection/mew_002_e071f4.jpg
+#	new file:   public/img/mew-collection/mew_016_fe7c2c.jpg
+#	new file:   public/img/mew-collection/mew_017_9a6b5e.jpg
+#	new file:   public/img/mew-collection/mew_018_ce3a2a.jpg
+#	new file:   public/img/mew-collection/mew_027_0573f2.jpg
+#	new file:   public/img/mew-collection/mew_027_d49db8.jpg
+#	new file:   public/img/mew-collection/mew_030_3facd3.jpg
+#	new file:   public/img/mew-collection/mew_033_3cb6bc.jpg
+#	new file:   public/img/mew-collection/mew_033_e1aefe.jpg
+#	new file:   public/img/mew-collection/mew_037_f67675.jpg
+#	new file:   public/img/mew-collection/mew_044_3d34b8.jpg
+#	new file:   public/img/mew-collection/mew_044_a45ef9.jpg
+#	new file:   public/img/mew-collection/mew_051_4e4f99.jpg
+#	new file:   public/img/mew-collection/mew_052_162fcb.jpg
+#	new file:   public/img/mew-collection/mew_055_50d43c.jpg
+#	new file:   public/img/mew-collection/mew_055_a8f4f8.jpg
+#	new file:   public/img/mew-collection/mew_069_02ce16.jpg
+#	new file:   public/img/mew-collection/mew_069_2fc6fe.jpg
+#	new file:   public/img/mew-collection/mew_080_6d6702.jpg
+#	new file:   public/img/mew-collection/mew_080_d47c99.jpg
+#	new file:   public/img/mew-collection/mew_085_3961fb.jpg
+#	new file:   public/img/mew-collection/mew_085_90f8f1.jpg
+#	new file:   public/img/mew-collection/mew_087_031ef9.jpg
+#	new file:   public/img/mew-collection/mew_091_ac04a3.jpg
+#	new file:   public/img/mew-collection/mew_091_be0acd.jpg
+#	new file:   public/img/mew-collection/mew_10_2be54b.jpg
+#	new file:   public/img/mew-collection/mew_10_3c6eb0.jpg
+#	new file:   public/img/mew-collection/mew_10_ec0f8a.jpg
+#	new file:   public/img/mew-collection/mew_111_c1ba4d.jpg
+#	new file:   public/img/mew-collection/mew_111_d426e6.jpg
+#	new file:   public/img/mew-collection/mew_119_319fd4.jpg
+#	new file:   public/img/mew-collection/mew_11_54c4df.jpg
+#	new file:   public/img/mew-collection/mew_15_2b5a81.jpg
+#	new file:   public/img/mew-collection/mew_15_df6316.jpg
+#	new file:   public/img/mew-collection/mew_183_3173c5.jpg
+#	new file:   public/img/mew-collection/mew_19_2795de.jpg
+#	new file:   public/img/mew-collection/mew_19_e95003.jpg
+#	new file:   public/img/mew-collection/mew_1_98161d.jpg
+#	new file:   public/img/mew-collection/mew_220_28ea6f.jpg
+#	new file:   public/img/mew-collection/mew_25_9aa8dd.jpg
+#	new file:   public/img/mew-collection/mew_29_2cfb6d.jpg
+#	new file:   public/img/mew-collection/mew_29_c76cdc.jpg
+#	new file:   public/img/mew-collection/mew_32_1a0aca.jpg
+#	new file:   public/img/mew-collection/mew_32_1cd1e1.jpg
+#	new file:   public/img/mew-collection/mew_32_d24d25.jpg
+#	new file:   public/img/mew-collection/mew_342_ede77f.jpg
+#	new file:   public/img/mew-collection/mew_343_de33a3.jpg
+#	new file:   public/img/mew-collection/mew_40_ddd806.jpg
+#	new file:   public/img/mew-collection/mew_47_b4c992.jpg
+#	new file:   public/img/mew-collection/mew_4_6972bf.jpg
+#	new file:   public/img/mew-collection/mew_4_b093b6.jpg
+#	new file:   public/img/mew-collection/mew_502_bca0f7.jpg
+#	new file:   public/img/mew-collection/mew_53_048cd8.jpg
+#	new file:   public/img/mew-collection/mew_53_44a678.jpg
+#	new file:   public/img/mew-collection/mew_53_4b691b.jpg
+#	new file:   public/img/mew-collection/mew_53_66bec5.jpg
+#	new file:   public/img/mew-collection/mew_53_a93c39.jpg
+#	new file:   public/img/mew-collection/mew_53_c6deaa.jpg
+#	new file:   public/img/mew-collection/mew_53_e5ae44.jpg
+#	new file:   public/img/mew-collection/mew_55_5ed759.jpg
+#	new file:   public/img/mew-collection/mew_55_7ed662.jpg
+#	new file:   public/img/mew-collection/mew_76_13cc37.jpg
+#	new file:   public/img/mew-collection/mew_76_4dafa8.jpg
+#	new file:   public/img/mew-collection/mew_76_72a4be.jpg
+#	new file:   public/img/mew-collection/mew_76_89595e.jpg
+#	new file:   public/img/mew-collection/mew_76_b008cb.jpg
+#	new file:   public/img/mew-collection/mew_8_0c5aa7.jpg
+#	new file:   public/img/mew-collection/mew_97_931d6f.jpg
+#	new file:   public/img/mew-collection/mew_9_888b7c.jpg
+#	new file:   public/img/mew-collection/mew_bw98_d1c1fa.jpg
+#	new file:   public/img/mew-collection/mew_dpbp#182_846a41.jpg
+#	new file:   public/img/mew-collection/mew_dpbp#182_a2b70d.jpg
+#	new file:   public/img/mew-collection/mew_ex_002_6e7a88.jpg
+#	new file:   public/img/mew-collection/mew_ex_007_9a92b9.jpg
+#	new file:   public/img/mew-collection/mew_ex_041_2e87b8.jpg
+#	new file:   public/img/mew-collection/mew_ex_041_77c3fd.jpg
+#	new file:   public/img/mew-collection/mew_ex_076_386463.jpg
+#	new file:   public/img/mew-collection/mew_ex_100_a27e50.jpg
+#	new file:   public/img/mew-collection/mew_ex_151_362f22.jpg
+#	new file:   public/img/mew-collection/mew_ex_151_8f079c.jpg
+#	new file:   public/img/mew-collection/mew_ex_151_96d9e0.jpg
+#	new file:   public/img/mew-collection/mew_ex_151_9c32d0.jpg
+#	new file:   public/img/mew-collection/mew_ex_151_d30f46.jpg
+#	new file:   public/img/mew-collection/mew_ex_193_a488da.jpg
+#	new file:   public/img/mew-collection/mew_ex_195_706e9e.jpg
+#	new file:   public/img/mew-collection/mew_ex_205_244eb6.jpg
+#	new file:   public/img/mew-collection/mew_ex_205_d1890f.jpg
+#	new file:   public/img/mew-collection/mew_ex_205_f65745.jpg
+#	new file:   public/img/mew-collection/mew_ex_208_3172db.jpg
+#	new file:   public/img/mew-collection/mew_ex_216_1b9535.jpg
+#	new file:   public/img/mew-collection/mew_ex_232_dfe579.jpg
+#	new file:   public/img/mew-collection/mew_ex_327_568e9d.jpg
+#	new file:   public/img/mew-collection/mew_ex_347_410c7a.jpg
+#	new file:   public/img/mew-collection/mew_ex_53_f79b7d.jpg
+#	new file:   public/img/mew-collection/mew_ex_88_003762.jpg
+#	new file:   public/img/mew-collection/mew_ex_88_05d445.jpg
+#	new file:   public/img/mew-collection/mew_ex_88_47616d.jpg
+#	new file:   public/img/mew-collection/mew_ex_88_ba2248.jpg
+#	new file:   public/img/mew-collection/mew_gg10_30abe3.jpg
+#	new file:   public/img/mew-collection/mew_no.151_c783f3.jpg
+#	new file:   public/img/mew-collection/mew_sm215_de17ac.jpg
+#	new file:   public/img/mew-collection/mew_unnumberedmiscp_ja-20_459680.jpg
+#	new file:   public/img/mew-collection/mew_unnumberedmiscp_ja-20_f52a63.jpg
+#	new file:   public/img/mew-collection/mew_unnumberedmiscp_ja-33_693885.jpg
+#	new file:   public/img/mew-collection/mew_unnumberedmiscp_ja-33_d580ae.jpg
+#	new file:   public/img/mew-collection/mew_unnumberedmiscp_ja-6_4175cf.jpg
+#	new file:   public/img/mew-collection/mew_unnumberedmiscp_ja-6_8bf496.jpg
+#	new file:   public/img/mew-collection/mew_v_039_cd2ce7.jpg
+#	new file:   public/img/mew-collection/mew_v_053_a9c5b3.jpg
+#	new file:   public/img/mew-collection/mew_v_060_1f65c3.jpg
+#	new file:   public/img/mew-collection/mew_v_069_b27cb6.jpg
+#	new file:   public/img/mew-collection/mew_v_069_eff927.jpg
+#	new file:   public/img/mew-collection/mew_v_105_2161f3.jpg
+#	new file:   public/img/mew-collection/mew_v_106_9fe414.jpg
+#	new file:   public/img/mew-collection/mew_v_113_330625.jpg
+#	new file:   public/img/mew-collection/mew_v_113_49d120.jpg
+#	new file:   public/img/mew-collection/mew_v_113_88722f.jpg
+#	new file:   public/img/mew-collection/mew_v_113_fc390e.jpg
+#	new file:   public/img/mew-collection/mew_v_250_25c156.jpg
+#	new file:   public/img/mew-collection/mew_v_251_58af49.jpg
+#	new file:   public/img/mew-collection/mew_vmax_040_fe5bbe.jpg
+#	new file:   public/img/mew-collection/mew_vmax_054_c76aa4.jpg
+#	new file:   public/img/mew-collection/mew_vmax_114_2ce6ad.jpg
+#	new file:   public/img/mew-collection/mew_vmax_114_6dee57.jpg
+#	new file:   public/img/mew-collection/mew_vmax_114_7bf2e9.jpg
+#	new file:   public/img/mew-collection/mew_vmax_114_992693.jpg
+#	new file:   public/img/mew-collection/mew_vmax_118_956d87.jpg
+#	new file:   public/img/mew-collection/mew_vmax_119_c89a80.jpg
+#	new file:   public/img/mew-collection/mew_vmax_268_16c732.jpg
+#	new file:   public/img/mew-collection/mew_vmax_269_21c847.jpg
+#	new file:   public/img/mew-collection/mew_vmax_280_8aa5ef.jpg
+#	new file:   public/img/mew-collection/mew_vmax_tg30_096505.jpg
+#	new file:   public/img/mew-collection/mew_xy110_477c98.jpg
+#	new file:   public/img/mew-collection/mew_xy192_b75f1e.jpg
+#	new file:   "public/img/mew-collection/mew_\316\264_148_3bd2cb.jpg"
+#	new file:   "public/img/mew-collection/mew_\316\264_148_f438d2.jpg"
+#	new file:   "public/img/mew-collection/mew_\316\264_3_35c68d.jpg"
+#	new file:   "public/img/mew-collection/mew_\316\264_3_ce00f1.jpg"
+#	new file:   "public/img/mew-collection/mew_\342\230\206_\316\264_015_c2fb33.jpg"
+#	new file:   "public/img/mew-collection/mew_\342\230\206_\316\264_015_dce4ec.jpg"
+#	new file:   "public/img/mew-collection/mew_\342\230\206_\316\264_101_d59aa5.jpg"
+#	new file:   "public/img/mew-collection/mew_\342\230\206_\316\264_101_d76e00.jpg"
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_029_d4b1ec.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_052_20b031.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_097_55bc1a.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_098_02278c.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_108_cb77a9.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_222_b86a1f.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_222_d9b65c.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_242_537588.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_71_008898.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_71_90b308.jpg
+#	new file:   public/img/mew-collection/mewtwo_&_mew-gx_sm191_24caaf.jpg
+#	new file:   public/img/mew-collection/shining_mew_041_2082a3.jpg
+#	new file:   public/img/mew-collection/shining_mew_40_de0e28.jpg
+#	new file:   public/img/mew-collection/shining_mew_unnumberedmiscp_ja-196_7d0862.jpg
+#	new file:   public/img/obsidian-flames/manifest.txt
+#	new file:   public/img/paldea-evolved/manifest.txt
+#	new file:   public/img/paldean-fates/manifest.txt
+#	new file:   public/img/paradox-rift/manifest.txt
+#	new file:   public/img/phantasmal-flames/manifest.txt
+#	new file:   public/img/pitch-black/manifest.txt
+#	new file:   public/img/pokemon-151/manifest.txt
+#	new file:   public/img/prismatic-evolutions/manifest.txt
+#	new file:   public/img/scarlet-violet/manifest.txt
+#	new file:   public/img/shrouded-fable/manifest.txt
+#	modified:   public/img/stellar-crown/manifest.txt
+#	deleted:    public/img/stellar-crown/terapagos_ex_128_9b9e1a.jpg
+#	new file:   public/img/surging-sparks/manifest.txt
+#	new file:   public/img/temporal-forces/manifest.txt
+#	new file:   public/img/twilight-masquerade/manifest.txt
+#	new file:   public/img/white-flare/manifest.txt
+#	modified:   public/index.css
+#	modified:   public/index.html
+#	modified:   public/index.js
+#	modified:   public/lib.js
+#	new file:   public/robots.txt
+#	modified:   public/sets.js
+#	new file:   public/sitemap.xml
+#	modified:   public/sw.js
+#	modified:   public/tracker.html
+#	modified:   public/tracker.js
+#	modified:   scripts/backup_sheets.py
+#	modified:   scripts/download_images.py
+#	modified:   scripts/sets_js.py
+#	new file:   scripts/sync_manifest.py
+#	new file:   scripts/validate_data.py
+#	modified:   tests/python/test_sets_js.py
+#	new file:   tests/python/test_sync_manifest.py
+#	new file:   tests/python/test_validate_data.py
+#	modified:   tests/site/ci_checks.mjs
+#	modified:   tests/unit/lib.test.mjs
+#	modified:   tests/unit/sw.test.mjs
+#
