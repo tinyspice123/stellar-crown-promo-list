@@ -143,6 +143,13 @@ for (const file of ['lib.js', 'index.js', 'tracker.js']) {
 for (const file of ['index.html', 'tracker.html']) {
   if (!fs.readFileSync(sitePath(file), 'utf8').includes('<script src="lib.js">')) fail(`${file} does not load lib.js`);
 }
+const trackerImageSources = [
+  fs.readFileSync(sitePath('tracker.html'), 'utf8'),
+  fs.readFileSync(sitePath('tracker.js'), 'utf8'),
+];
+if (trackerImageSources.some(source => /<img\b[^>]*\bcrossorigin\s*=/i.test(source)))
+  fail('tracker card images must not force CORS; configured image hosts support no-cors display');
+else ok('tracker card images allow no-cors display');
 
 // ---------- PWA files ----------
 console.log('pwa');

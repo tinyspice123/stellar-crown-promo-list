@@ -285,7 +285,7 @@ function cardEl(it){
   const qtyHtml=`<div class="qtytag ${zeroCls}">×${it.qty}</div>`;
   d.innerHTML=`
     <div class="imgwrap${/reverse\s*holo/i.test(it.variant)?' rh':''}">
-      ${url?`<img loading="lazy" decoding="async" fetchpriority="low" crossorigin="anonymous" alt="${esc(it.card)}" data-src="${esc(url)}"
+      ${url?`<img loading="lazy" decoding="async" fetchpriority="low" alt="${esc(it.card)}" data-src="${esc(url)}"
         data-alts="${esc(alts.join('|'))}" data-ph="${initial}">`
         :`<div class="ph"><b>${initial}</b><span>variant</span></div>`}
       ${it.price?`<span class="pricechip">${esc(it.price)}</span>`:''}
