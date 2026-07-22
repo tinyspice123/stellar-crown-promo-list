@@ -165,6 +165,8 @@ The scheduled backup workflow runs the same command daily and commits only
 when sheet data changed. It also synchronizes image manifests; when that changes
 anything under `public/`, the workflow explicitly dispatches the normal test and
 deployment pipeline so production never waits for an unrelated push.
+Sheet downloads are paced and temporary timeouts, rate limits, and server errors
+receive three attempts with exponential backoff.
 
 Validate every configured backup and exact-variant image mapping offline with:
 

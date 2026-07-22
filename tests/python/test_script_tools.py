@@ -66,11 +66,14 @@ class BackupSheetsTest(unittest.TestCase):
         ]
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            result = backup_sheets.backup(entries, out, opener)
+            result = backup_sheets.backup(
+                entries, out, opener, sleeper=lambda _seconds: None,
+                pace_seconds=0)
         self.assertEqual(result, 1)
         self.assertEqual((out / "good.csv").read_text(encoding="utf-8"),
                          "Card,Have\nPikachu,1\n")
-        self.assertEqual([timeout for _, timeout in seen], [30, 30, 30])
+        self.assertEqual([timeout for _, timeout in seen],
+                         [backup_sheets.REQUEST_TIMEOUT] * 5)
         self.assertIn("card-tracker-backup", seen[0][0].get_header("User-agent"))
         self.assertIn("Failed: html, bad", output.getvalue())
 
@@ -80,9 +83,25 @@ class BackupSheetsTest(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             result = backup_sheets.backup(
                 [{"id": "eevee", "sheet": "https://example.test/sheet"}],
-                out, opener)
+                out, opener, pace_seconds=0)
         self.assertEqual(result, 0)
         self.assertTrue((out / "eevee.csv").exists())
+
+    def test_temporary_failure_retries_with_backoff(self):
+        attempts = []
+        delays = []
+
+        def opener(*_args, **_kwargs):
+            attempts.append(1)
+            if len(attempts) < 3:
+                raise TimeoutError("timed out")
+            return Response(b"Card,Have\nMew,1\n")
+
+        data = backup_sheets.fetch_csv(
+            "https://example.test/sheet", opener, delays.append)
+        self.assertEqual(data, "Card,Have\nMew,1\n")
+        self.assertEqual(len(attempts), 3)
+        self.assertEqual(delays, [2, 4])
 
     def test_main_handles_registry_without_sheets(self):
         with mock.patch.object(backup_sheets, "parse_sets", return_value=[]), \
