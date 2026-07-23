@@ -82,9 +82,11 @@ test('install precaches the shell and waits before activating an update',async()
 });
 
 test('refresh request activates the waiting service worker',()=>{
-  listeners.message({data:{type:'OTHER'}});
+  listeners.message({origin:'https://tracker.test',data:{type:'OTHER'}});
   assert.equal(skipWaitingCalled,false);
-  listeners.message({data:{type:'SKIP_WAITING'}});
+  listeners.message({origin:'https://malicious.test',data:{type:'SKIP_WAITING'}});
+  assert.equal(skipWaitingCalled,false);
+  listeners.message({origin:'https://tracker.test',data:{type:'SKIP_WAITING'}});
   assert.equal(skipWaitingCalled,true);
 });
 

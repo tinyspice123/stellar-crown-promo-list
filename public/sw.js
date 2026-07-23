@@ -19,7 +19,8 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('message',event=>{
-  if(event.data?.type==='SKIP_WAITING') self.skipWaiting();
+  if(event.origin===location.origin && event.data?.type==='SKIP_WAITING')
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
